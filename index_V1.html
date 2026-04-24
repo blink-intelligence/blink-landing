@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blink — Tu agente IA en WhatsApp</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #001859;
+    --blue: #035FFF;
+    --teal: #6FFFE9;
+    --white: #FFFFFF;
+    --text-muted: #8896b8;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--navy); color: var(--white); font-family: 'Outfit', sans-serif; font-weight: 400; overflow-x: hidden; }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 20px 40px;
+    display: flex; align-items: center; justify-content: space-between;
+    backdrop-filter: blur(12px);
+    background: rgba(0,24,89,0.7);
+    border-bottom: 1px solid rgba(111,255,233,0.08);
+  }
+  .logo { font-family: 'Outfit', sans-serif; font-size: 24px; font-weight: 300; letter-spacing: -0.5px; color: var(--teal); }
+  .nav-cta { background: var(--teal); color: var(--navy); font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 14px; padding: 10px 24px; border-radius: 100px; border: none; cursor: pointer; text-decoration: none; transition: opacity 0.2s, transform 0.2s; }
+  .nav-cta:hover { opacity: 0.9; transform: scale(1.02); }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 60px;
+    padding: 120px 80px 80px;
+    max-width: 1300px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  .blob { position: fixed; border-radius: 50%; filter: blur(120px); pointer-events: none; z-index: -1; }
+  .blob-1 { width: 600px; height: 600px; background: rgba(3,95,255,0.2); top: -100px; right: 0; }
+  .blob-2 { width: 400px; height: 400px; background: rgba(111,255,233,0.08); top: 400px; left: -100px; }
+
+  .hero-left { display: flex; flex-direction: column; }
+
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(111,255,233,0.08); border: 1px solid rgba(111,255,233,0.25);
+    color: var(--teal); font-size: 13px; font-weight: 500;
+    padding: 6px 16px; border-radius: 100px; margin-bottom: 28px;
+    width: fit-content;
+    animation: fadeUp 0.6s ease both;
+  }
+  .hero-badge .dot { width: 6px; height: 6px; background: var(--teal); border-radius: 50%; animation: pulse 2s infinite; }
+
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
+
+  h1 { font-family: 'Poppins', sans-serif; font-size: clamp(36px, 4.5vw, 62px); font-weight: 800; line-height: 1.05; letter-spacing: -2px; animation: fadeUp 0.7s 0.1s ease both; }
+  h1 em { font-style: normal; background: linear-gradient(90deg, var(--teal), var(--blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+  .hero-sub { font-size: clamp(15px, 1.4vw, 18px); color: var(--text-muted); margin: 20px 0 36px; line-height: 1.65; font-weight: 300; animation: fadeUp 0.7s 0.2s ease both; }
+
+  .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; animation: fadeUp 0.7s 0.3s ease both; }
+
+  .btn-primary { background: var(--teal); color: var(--navy); font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 16px; padding: 15px 32px; border-radius: 100px; border: none; cursor: pointer; text-decoration: none; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 0 40px rgba(111,255,233,0.3); }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 60px rgba(111,255,233,0.45); }
+  .btn-secondary { background: transparent; color: var(--white); font-family: 'Outfit', sans-serif; font-weight: 400; font-size: 16px; padding: 15px 32px; border-radius: 100px; border: 1px solid rgba(255,255,255,0.2); cursor: pointer; text-decoration: none; transition: border-color 0.2s, background 0.2s; }
+  .btn-secondary:hover { border-color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.05); }
+
+  .hero-stats { display: flex; gap: 32px; margin-top: 40px; animation: fadeUp 0.7s 0.4s ease both; }
+  .stat-item {}
+  .stat-num { font-family: 'Poppins', sans-serif; font-size: 28px; font-weight: 800; color: var(--teal); }
+  .stat-label { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  /* ── HERO VISUAL — FULL DEMO ── */
+  .hero-right { display: flex; justify-content: center; align-items: center; animation: fadeUp 0.8s 0.3s ease both; }
+
+  .demo-container {
+    width: 100%;
+    max-width: 420px;
+    position: relative;
+  }
+
+  /* CRM notification at top */
+  .crm-ping {
+    background: rgba(3,95,255,0.15);
+    border: 1px solid rgba(3,95,255,0.4);
+    border-radius: 14px;
+    padding: 12px 16px;
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 12px;
+    opacity: 0;
+    transform: translateY(-10px);
+    animation: slideDown 0.5s 1s ease forwards;
+  }
+  .crm-icon { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, #4F46E5, #7C3AED); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+  .crm-text { font-size: 12px; color: #c8d8ff; line-height: 1.4; }
+  .crm-text strong { color: var(--white); font-size: 13px; display: block; }
+  .crm-badge { margin-left: auto; background: rgba(111,255,233,0.15); border: 1px solid rgba(111,255,233,0.3); color: var(--teal); font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 100px; white-space: nowrap; }
+
+  /* Phone */
+  .phone-frame {
+    background: #0d1a3a;
+    border: 1px solid rgba(111,255,233,0.15);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04);
+  }
+
+  .phone-header {
+    background: #0a1530;
+    padding: 14px 16px;
+    display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .p-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--teal), var(--blue)); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: var(--navy); flex-shrink: 0; }
+  .p-info .p-name { font-size: 14px; font-weight: 500; }
+  .p-info .p-status { font-size: 11px; color: var(--teal); display: flex; align-items: center; gap: 4px; }
+  .p-status::before { content: ''; display: inline-block; width: 5px; height: 5px; background: var(--teal); border-radius: 50; }
+  .p-meta { margin-left: auto; font-size: 11px; color: var(--text-muted); }
+
+  /* Chat body — fixed height, messages scroll up */
+  .chat-body {
+    padding: 10px 12px;
+    display: flex; flex-direction: column; gap: 7px;
+    background: #0b1526;
+    height: 340px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Date separator */
+  .chat-date { text-align: center; margin: 4px 0; }
+  .chat-date span { background: rgba(255,255,255,0.06); font-size: 10px; color: var(--text-muted); padding: 3px 10px; border-radius: 100px; }
+
+  /* Messages */
+  .msg { max-width: 82%; padding: 8px 11px; border-radius: 14px; font-size: 12.5px; line-height: 1.5; flex-shrink: 0;
+    animation: msgAppear 0.35s ease both; }
+  .msg-in { background: #1a2a4a; border-bottom-left-radius: 3px; align-self: flex-start; color: #c8d8ff; }
+  .msg-out { background: linear-gradient(135deg, #00c896, #00a8d8); color: #001828; border-bottom-right-radius: 3px; align-self: flex-end; font-weight: 500; }
+  .msg-time { font-size: 9.5px; opacity: 0.55; display: block; text-align: right; margin-top: 3px; }
+
+  /* Photo bubble */
+  .msg-photo { max-width: 72%; align-self: flex-end; border-radius: 14px; border-bottom-right-radius: 3px; overflow: hidden; animation: msgAppear 0.35s ease both; flex-shrink: 0; }
+  .photo-inner { width: 200px; height: 120px; position: relative; }
+  .photo-inner svg { width: 100%; height: 100%; }
+  .photo-caption { background: linear-gradient(135deg, #00c896, #00a8d8); color: #001828; padding: 6px 11px; font-size: 11.5px; font-weight: 500; }
+  .photo-caption .msg-time { color: #001828; opacity: 0.6; }
+
+  /* Audio bubble */
+  .msg-audio { display: flex; align-items: center; gap: 8px; padding: 8px 12px; }
+  .audio-play { width: 28px; height: 28px; border-radius: 50%; background: rgba(111,255,233,0.15); display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; }
+  .audio-wave { flex: 1; display: flex; align-items: center; gap: 2px; height: 20px; }
+  .audio-wave span { width: 2.5px; border-radius: 2px; background: rgba(111,255,233,0.5); animation: wavePulse 1s ease-in-out infinite; }
+  .audio-wave span:nth-child(1){height:4px;animation-delay:0s}
+  .audio-wave span:nth-child(2){height:10px;animation-delay:.1s}
+  .audio-wave span:nth-child(3){height:16px;animation-delay:.2s}
+  .audio-wave span:nth-child(4){height:8px;animation-delay:.3s}
+  .audio-wave span:nth-child(5){height:18px;animation-delay:.4s}
+  .audio-wave span:nth-child(6){height:12px;animation-delay:.5s}
+  .audio-wave span:nth-child(7){height:6px;animation-delay:.6s}
+  .audio-wave span:nth-child(8){height:14px;animation-delay:.7s}
+  .audio-wave span:nth-child(9){height:9px;animation-delay:.8s}
+  .audio-wave span:nth-child(10){height:5px;animation-delay:.9s}
+  .audio-dur { font-size: 10px; color: var(--text-muted); flex-shrink: 0; }
+  @keyframes wavePulse { 0%,100%{opacity:.4;transform:scaleY(.7)} 50%{opacity:1;transform:scaleY(1)} }
+
+  /* Typing indicator */
+  .typing-indicator { display: flex; gap: 4px; align-items: center; padding: 9px 12px; background: #1a2a4a; border-radius: 14px; border-bottom-left-radius: 3px; width: fit-content; flex-shrink: 0; animation: msgAppear 0.3s ease both; }
+  .typing-indicator span { width: 5px; height: 5px; border-radius: 50%; background: var(--teal); opacity: 0.5; animation: bounce 1.2s infinite; }
+  .typing-indicator span:nth-child(2){animation-delay:.2s}
+  .typing-indicator span:nth-child(3){animation-delay:.4s}
+  @keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-4px);opacity:1}}
+
+  /* Confirmed card */
+  .confirmed-card { align-self: flex-end; max-width: 88%; background: rgba(0,200,150,0.12); border: 1px solid rgba(0,200,150,0.3); border-radius: 14px; border-bottom-right-radius: 3px; padding: 10px 12px; flex-shrink: 0; animation: msgAppear 0.4s ease both; }
+  .confirmed-header { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
+  .confirmed-icon { width: 22px; height: 22px; background: #00c896; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; }
+  .confirmed-title { font-size: 12px; font-weight: 600; color: #00e8b0; }
+  .confirmed-detail { font-size: 11px; color: #a8f0e4; line-height: 1.55; }
+
+  @keyframes msgAppear { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+  /* Bottom input bar */
+  .chat-input { background: #091020; padding: 9px 12px; display: flex; align-items: center; gap: 8px; border-top: 1px solid rgba(255,255,255,0.06); }
+  .chat-input-field { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 7px 14px; font-size: 12.5px; color: var(--text-muted); font-family: 'Outfit', sans-serif; }
+  .chat-send { width: 30px; height: 30px; background: var(--teal); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+
+  /* Lead source tag below phone */
+  .source-tag { display: flex; align-items: center; gap: 8px; margin-top: 10px; justify-content: center; }
+  .source-item { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 100px; padding: 5px 12px; font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 5px; }
+  .source-item.active { border-color: rgba(111,255,233,0.3); color: var(--teal); background: rgba(111,255,233,0.06); }
+  .source-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--teal); animation: pulse 2s infinite; }
+
+  /* Animation timings */
+  @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes slideDown { to{opacity:1;transform:translateY(0)} }
+
+  /* ── PROOF STRIP ── */
+  .proof-strip { padding: 28px 40px; text-align: center; border-top: 1px solid rgba(255,255,255,0.06); border-bottom: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.02); }
+  .proof-strip p { font-size: 12px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 20px; }
+  .proof-logos { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 40px; }
+  .proof-logos span { font-family: 'Poppins', sans-serif; font-size: 17px; font-weight: 700; color: rgba(255,255,255,0.22); letter-spacing: -0.5px; }
+
+  /* ── SECTIONS ── */
+  section { padding: 100px 40px; max-width: 1100px; margin: 0 auto; position: relative; }
+  .section-tag { font-size: 12px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal); margin-bottom: 14px; }
+  h2 { font-family: 'Poppins', sans-serif; font-size: clamp(28px, 3.5vw, 46px); font-weight: 800; line-height: 1.1; letter-spacing: -1.5px; margin-bottom: 14px; }
+  .section-sub { font-size: 17px; color: var(--text-muted); max-width: 520px; line-height: 1.65; font-weight: 300; }
+
+  /* ── HOW IT WORKS ── */
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 2px; margin-top: 60px; border: 1px solid rgba(255,255,255,0.07); border-radius: 20px; overflow: hidden; }
+  .step { padding: 32px 26px; background: rgba(255,255,255,0.02); border-right: 1px solid rgba(255,255,255,0.07); transition: background 0.3s; }
+  .step:last-child { border-right: none; }
+  .step:hover { background: rgba(3,95,255,0.08); }
+  .step-num { font-family: 'Poppins', sans-serif; font-size: 38px; font-weight: 800; color: rgba(111,255,233,0.12); line-height: 1; margin-bottom: 14px; }
+  .step-icon { width: 42px; height: 42px; border-radius: 12px; background: rgba(3,95,255,0.2); border: 1px solid rgba(3,95,255,0.4); display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 14px; }
+  .step h3 { font-family: 'Poppins', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+  .step p { font-size: 13.5px; color: var(--text-muted); line-height: 1.6; }
+
+  /* ── FEATURES ── */
+  .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 14px; margin-top: 56px; }
+  .feature-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 28px; transition: border-color 0.3s, background 0.3s; }
+  .feature-card:hover { border-color: rgba(111,255,233,0.25); background: rgba(111,255,233,0.04); }
+  .feature-icon { font-size: 26px; width: 50px; height: 50px; background: rgba(3,95,255,0.15); border: 1px solid rgba(3,95,255,0.3); border-radius: 14px; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
+  .feature-card h3 { font-family: 'Poppins', sans-serif; font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+  .feature-card p { font-size: 13.5px; color: var(--text-muted); line-height: 1.65; }
+
+  /* ── PRICING ── */
+  .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 60px; align-items: stretch; }
+  .price-features { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; flex: 1; }
+
+  .price-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 34px 30px; position: relative; display: flex; flex-direction: column; }
+  .price-card.featured { background: rgba(3,95,255,0.12); border-color: rgba(111,255,233,0.3); box-shadow: 0 0 60px rgba(3,95,255,0.15); }
+
+  .price-tag-popular { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: var(--teal); color: var(--navy); font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 14px; border-radius: 100px; white-space: nowrap; }
+
+  .price-plan { font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.12em; }
+  .price-name { font-family: 'Poppins', sans-serif; font-size: 22px; font-weight: 800; margin-bottom: 16px; color: var(--white); }
+
+  .price-row { display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; }
+  .price-original { font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 400; color: var(--text-muted); text-decoration: line-through; }
+  .price-amount { font-family: 'Poppins', sans-serif; font-size: 46px; font-weight: 800; line-height: 1; }
+  .price-amount sup { font-size: 20px; vertical-align: super; }
+  .price-period { font-size: 13px; color: var(--text-muted); margin: 4px 0 8px; }
+
+  .impl-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(111,255,233,0.08); border: 1px solid rgba(111,255,233,0.2); border-radius: 100px; padding: 4px 10px; font-size: 11px; color: var(--teal); margin-bottom: 20px; }
+
+  .price-divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 18px 0; }
+
+  .price-features li { display: flex; align-items: flex-start; gap: 9px; font-size: 13.5px; color: #c8d0e8; line-height: 1.4; }
+  .price-features li::before { content: '✓'; color: var(--teal); font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+  .price-features li.no::before { content: '✗'; color: rgba(255,255,255,0.2); }
+  .price-features li.no { color: rgba(255,255,255,0.3); }
+  .price-features li small { font-size: 11px; color: var(--text-muted); display: block; margin-top: 1px; }
+
+  .btn-price { width: 100%; padding: 13px; border-radius: 100px; font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer; text-decoration: none; display: block; text-align: center; transition: all 0.2s; }
+  .btn-price-teal { background: var(--teal); color: var(--navy); border: none; box-shadow: 0 0 30px rgba(111,255,233,0.3); }
+  .btn-price-teal:hover { box-shadow: 0 0 50px rgba(111,255,233,0.5); transform: translateY(-2px); }
+  .btn-price-outline { background: transparent; color: var(--white); border: 1px solid rgba(255,255,255,0.2); }
+  .btn-price-outline:hover { border-color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.05); }
+
+  .price-note { font-size: 11.5px; color: var(--text-muted); text-align: center; margin-top: 10px; line-height: 1.5; }
+
+  /* ── TESTIMONIALS ── */
+  .testimonials-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 14px; margin-top: 56px; }
+  .testimonial { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 26px; }
+  .stars { color: var(--teal); font-size: 13px; margin-bottom: 12px; }
+  .testimonial p { font-size: 14.5px; line-height: 1.7; color: #c8d0e8; margin-bottom: 18px; }
+  .testimonial-author { display: flex; align-items: center; gap: 10px; }
+  .author-avatar { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, var(--blue), var(--teal)); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: var(--navy); flex-shrink: 0; }
+  .author-name { font-size: 14px; font-weight: 500; }
+  .author-role { font-size: 11.5px; color: var(--text-muted); }
+
+  /* ── FAQ ── */
+  .faq-list { margin-top: 56px; display: flex; flex-direction: column; gap: 2px; }
+  .faq-item { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; overflow: hidden; }
+  .faq-q { width: 100%; background: none; border: none; cursor: pointer; padding: 18px 22px; text-align: left; display: flex; align-items: center; justify-content: space-between; gap: 16px; font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 500; color: var(--white); transition: background 0.2s; }
+  .faq-q:hover { background: rgba(255,255,255,0.04); }
+  .faq-arrow { width: 22px; height: 22px; border-radius: 50%; background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: transform 0.3s; font-size: 11px; }
+  .faq-item.open .faq-arrow { transform: rotate(180deg); background: rgba(111,255,233,0.2); color: var(--teal); }
+  .faq-a { max-height: 0; overflow: hidden; transition: max-height 0.35s ease, padding 0.35s ease; padding: 0 22px; }
+  .faq-a p { font-size: 14.5px; color: var(--text-muted); line-height: 1.7; padding-bottom: 18px; }
+  .faq-item.open .faq-a { max-height: 300px; padding: 4px 22px 0; }
+
+  /* ── FINAL CTA ── */
+  .final-cta { margin: 0 40px 80px; background: linear-gradient(135deg, rgba(3,95,255,0.3) 0%, rgba(0,24,89,0.8) 60%, rgba(111,255,233,0.1) 100%); border: 1px solid rgba(111,255,233,0.2); border-radius: 28px; padding: 80px 40px; text-align: center; position: relative; overflow: hidden; }
+  .final-cta h2 { max-width: 620px; margin: 0 auto 14px; }
+  .final-cta p { font-size: 17px; color: var(--text-muted); margin-bottom: 36px; font-weight: 300; }
+
+  /* ── FOOTER ── */
+  footer { border-top: 1px solid rgba(255,255,255,0.06); padding: 28px 40px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; }
+  footer .logo { font-size: 20px; }
+  footer p { font-size: 13px; color: var(--text-muted); }
+  footer a { color: var(--text-muted); text-decoration: none; font-size: 13px; }
+  footer a:hover { color: var(--teal); }
+
+  /* ── ANIMATED BACKGROUND ── */
+  #bg-canvas {
+    position: fixed; inset: 0; z-index: -2;
+    pointer-events: none;
+  }
+  .orb { position: fixed; border-radius: 50%; pointer-events: none; z-index: -1; mix-blend-mode: screen; }
+  .orb-1 { width: 700px; height: 700px; background: radial-gradient(circle, rgba(3,95,255,0.18) 0%, transparent 70%); top: -200px; right: -100px; animation: drift1 18s ease-in-out infinite; }
+  .orb-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(111,255,233,0.1) 0%, transparent 70%); bottom: 100px; left: -100px; animation: drift2 22s ease-in-out infinite; }
+  .orb-3 { width: 400px; height: 400px; background: radial-gradient(circle, rgba(3,50,200,0.15) 0%, transparent 70%); top: 40%; right: 30%; animation: drift3 26s ease-in-out infinite; }
+  @keyframes drift1 { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(-60px,80px) scale(1.08)} 66%{transform:translate(40px,-60px) scale(0.95)} }
+  @keyframes drift2 { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(80px,-60px) scale(1.1)} 66%{transform:translate(-40px,80px) scale(0.92)} }
+  @keyframes drift3 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-80px,60px) scale(1.12)} }
+  .scroll-line { position: fixed; left: 50%; top: 0; width: 1px; background: linear-gradient(to bottom, transparent, rgba(111,255,233,0.25), transparent); z-index: -1; transform: translateX(-50%); pointer-events: none; }
+
+  /* ── REVEAL ── */
+  .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* ── EXIT POPUP ── */
+  .popup-overlay { position: fixed; inset: 0; background: rgba(0,10,40,0.85); backdrop-filter: blur(8px); z-index: 1000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; padding: 20px; }
+  .popup-overlay.active { opacity: 1; pointer-events: all; }
+
+  .popup-box {
+    background: linear-gradient(135deg, #0d1a3a, #071024);
+    border: 1px solid rgba(111,255,233,0.2);
+    border-radius: 28px;
+    padding: 48px 44px;
+    max-width: 540px; width: 100%;
+    position: relative;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.6), 0 0 60px rgba(3,95,255,0.15);
+    text-align: center;
+    transform: scale(0.95) translateY(20px);
+    transition: transform 0.3s ease;
+  }
+  .popup-overlay.active .popup-box { transform: scale(1) translateY(0); }
+
+  .popup-close { position: absolute; top: 16px; right: 20px; background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: color 0.2s; }
+  .popup-close:hover { color: var(--white); }
+
+  .popup-gift { font-size: 48px; margin-bottom: 16px; animation: bounce2 2s infinite; }
+  @keyframes bounce2 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+
+  .popup-tag { display: inline-block; background: rgba(111,255,233,0.1); border: 1px solid rgba(111,255,233,0.3); color: var(--teal); font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; padding: 4px 14px; border-radius: 100px; margin-bottom: 16px; }
+
+  .popup-box h3 { font-family: 'Poppins', sans-serif; font-size: 26px; font-weight: 800; line-height: 1.15; letter-spacing: -0.8px; margin-bottom: 12px; }
+  .popup-box h3 em { font-style: normal; background: linear-gradient(90deg, var(--teal), var(--blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+  .popup-box p { font-size: 15px; color: var(--text-muted); line-height: 1.6; margin-bottom: 28px; font-weight: 300; }
+
+  .popup-offer { background: rgba(111,255,233,0.06); border: 1px solid rgba(111,255,233,0.15); border-radius: 14px; padding: 16px 20px; margin-bottom: 28px; }
+  .popup-offer-row { display: flex; justify-content: space-between; align-items: center; }
+  .popup-offer-label { font-size: 13px; color: var(--text-muted); }
+  .popup-offer-value { font-size: 13px; font-weight: 500; color: var(--white); }
+  .popup-offer-highlight { font-size: 14px; font-weight: 600; color: var(--teal); }
+  .popup-offer-divider { border: none; border-top: 1px solid rgba(255,255,255,0.06); margin: 10px 0; }
+
+  .popup-form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+  .popup-input { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 13px 16px; font-size: 14px; color: var(--white); font-family: 'Outfit', sans-serif; outline: none; transition: border-color 0.2s; }
+  .popup-input::placeholder { color: var(--text-muted); }
+  .popup-input:focus { border-color: rgba(111,255,233,0.4); }
+  .popup-input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .popup-btn { width: 100%; background: var(--teal); color: var(--navy); border: none; border-radius: 100px; padding: 15px; font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 0 30px rgba(111,255,233,0.3); }
+  .popup-btn:hover { box-shadow: 0 0 50px rgba(111,255,233,0.5); transform: translateY(-1px); }
+
+  .popup-skip { background: none; border: none; color: var(--text-muted); font-size: 13px; cursor: pointer; margin-top: 6px; text-decoration: underline; font-family: 'Outfit', sans-serif; transition: color 0.2s; }
+  .popup-skip:hover { color: var(--white); }
+
+  .scroll-line { display: none; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .hero { grid-template-columns: 1fr; padding: 100px 20px 50px; text-align: center; gap: 32px; }
+    .hero-badge { margin: 0 auto 20px; }
+    .hero-actions { justify-content: center; }
+    .hero-stats { justify-content: center; flex-wrap: wrap; gap: 20px; }
+    .hero-right { order: -1; width: 100%; }
+    .demo-container { max-width: 100%; }
+
+    /* Chat responsive fixes */
+    .crm-ping { padding: 10px 12px; gap: 8px; }
+    .crm-text strong { font-size: 12px; }
+    .crm-text { font-size: 11px; }
+    .phone-frame { border-radius: 18px; }
+    .chat-body { height: 260px; }
+    .msg { font-size: 12px; max-width: 88%; }
+    .msg-photo .photo-inner { width: 160px; height: 96px; }
+    .confirmed-detail { font-size: 10.5px; }
+
+    nav { padding: 14px 20px; }
+    section { padding: 60px 20px; }
+    .final-cta { margin: 0 16px 60px; padding: 50px 20px; }
+    footer { padding: 24px 20px; flex-direction: column; text-align: center; }
+    .steps { grid-template-columns: 1fr; }
+    .step { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.07); }
+    .step:last-child { border-bottom: none; }
+    .popup-box { padding: 32px 20px; }
+    .popup-input-row { grid-template-columns: 1fr; }
+    .pricing-grid { grid-template-columns: 1fr; }
+    .source-tag { gap: 5px !important; }
+    .source-item { font-size: 10px; padding: 4px 9px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+<canvas id="bg-canvas"></canvas>
+
+<!-- EXIT POPUP -->
+<div class="popup-overlay" id="exitPopup">
+  <div class="popup-box">
+    <button class="popup-close" onclick="closePopup()">✕</button>
+    <div class="popup-gift">🎁</div>
+    <div class="popup-tag">Oferta exclusiva por tiempo limitado</div>
+    <h3>Antes de irte,<br>obtén <em>1 mes gratis</em></h3>
+    <p>Agenda una llamada de 20 min con nuestro equipo y conoce cómo Blink puede transformar tu proceso comercial. Si contratas por 3 meses, el primero va por nuestra cuenta.</p>
+
+    <div class="popup-offer">
+      <div class="popup-offer-row">
+        <span class="popup-offer-label">Plan Edify (3 meses)</span>
+        <span class="popup-offer-value">$897</span>
+      </div>
+      <div class="popup-offer-divider"></div>
+      <div class="popup-offer-row">
+        <span class="popup-offer-label">Descuento 1er mes gratis</span>
+        <span class="popup-offer-highlight">− $299</span>
+      </div>
+      <div class="popup-offer-divider"></div>
+      <div class="popup-offer-row">
+        <span class="popup-offer-label" style="font-weight:600; color: var(--white);">Total</span>
+        <span class="popup-offer-highlight" style="font-size:16px;">$598</span>
+      </div>
+    </div>
+
+    <div class="popup-form" id="popupForm">
+      <div class="popup-input-row">
+        <input type="text" class="popup-input" id="pName" placeholder="Tu nombre *" oninput="clearError(this)">
+        <input type="text" class="popup-input" id="pCompany" placeholder="Empresa *" oninput="clearError(this)">
+      </div>
+      <input type="tel" class="popup-input" id="pPhone" placeholder="WhatsApp (+51 ...) *" oninput="clearError(this)">
+      <input type="email" class="popup-input" id="pEmail" placeholder="Correo electrónico *" oninput="clearError(this)">
+      <div id="popupError" style="color:#ff6b6b;font-size:12.5px;text-align:left;display:none;padding:4px 2px;">⚠ Por favor completa todos los campos correctamente.</div>
+    </div>
+
+    <button class="popup-btn" onclick="submitPopup()">📅 Agendar mi llamada gratis →</button>
+    <br>
+    <button class="popup-skip" onclick="closePopup()">No, prefiero pagar precio completo</button>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <span class="logo">blink</span>
+  <a href="#pricing" class="nav-cta">Ver planes</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-left">
+    <div class="hero-badge">
+      <span class="dot"></span>
+      Agente IA para WhatsApp Business
+    </div>
+
+    <h1>Tu equipo comercial<br>trabaja <em>24/7 en automático</em></h1>
+
+    <p class="hero-sub">
+      Blink detecta cada nuevo lead, lo contacta por WhatsApp en segundos, lo califica y agenda una reunión con tu asesor — sin intervención humana.
+    </p>
+
+    <div class="hero-actions">
+      <a href="#pricing" class="btn-primary">Ver planes y precios</a>
+      <a href="#como-funciona" class="btn-secondary">Ver cómo funciona</a>
+    </div>
+
+    <div class="hero-stats">
+      <div class="stat-item">
+        <div class="stat-num">&lt;5s</div>
+        <div class="stat-label">Tiempo de respuesta</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">+50%</div>
+        <div class="stat-label">Más leads respondidos vs. llamada</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">24/7</div>
+        <div class="stat-label">Sin descanso</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="demo-container">
+      <!-- CRM notification -->
+      <div class="crm-ping">
+        <div class="crm-icon">⚡</div>
+        <div class="crm-text">
+          <strong>Nuevo lead detectado</strong>
+          Formulario "Proyecto Residencial" · Facebook Ads
+        </div>
+        <span class="crm-badge">AHORA</span>
+      </div>
+
+      <!-- Phone -->
+      <div class="phone-frame">
+        <div class="phone-header">
+          <div class="p-avatar">
+            <svg width="22" height="22" viewBox="0 0 100 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- b stem -->
+              <rect x="18" y="8" width="16" height="90" rx="8" fill="#001859"/>
+              <!-- circle of b -->
+              <circle cx="54" cy="72" r="28" fill="#001859"/>
+              <circle cx="54" cy="72" r="19" fill="white"/>
+              <!-- chat bubble tail -->
+              <path d="M34 88 L26 104 L48 94" fill="#001859"/>
+              <!-- eyes -->
+              <circle cx="46" cy="70" r="4" fill="#001859"/>
+              <circle cx="62" cy="70" r="4" fill="#001859"/>
+            </svg>
+          </div>
+          <div class="p-info">
+            <div class="p-name">Agente Blink IA</div>
+            <div class="p-status">En línea</div>
+          </div>
+          <div class="p-meta">WhatsApp Business</div>
+        </div>
+
+        <div class="chat-body" id="chatBody">
+          <!-- Messages injected by JS -->
+        </div>
+
+        <div class="chat-input">
+          <div class="chat-input-field">Escribe un mensaje...</div>
+          <div class="chat-send">➤</div>
+        </div>
+      </div>
+
+      <!-- Source tags -->
+      <div style="margin-top:12px;">
+        <p style="font-size:10.5px;color:var(--text-muted);text-align:center;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;">Contacta leads generados desde</p>
+        <div class="source-tag" style="flex-wrap:wrap;gap:6px;justify-content:center;">
+          <div class="source-item active"><span class="source-dot"></span>Google Ads</div>
+          <div class="source-item">Meta Ads</div>
+          <div class="source-item">Urbania</div>
+          <div class="source-item">Adondevivir</div>
+          <div class="source-item">Nexo Inmobiliario</div>
+          <div class="source-item">Página web</div>
+          <div class="source-item">LaEncontré</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROOF STRIP -->
+<div class="proof-strip">
+  <p>Empresas que ya automatizan con Blink</p>
+  <div class="proof-logos">
+    <span>TAKLAB Group</span>
+    <span>Global Inmobiliaria</span>
+    <span>Dommio</span>
+    <span>Urbana Pro</span>
+    <span>Capitalia Realty</span>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section id="como-funciona">
+  <div class="reveal">
+    <p class="section-tag">Así funciona</p>
+    <h2>De lead a reunión agendada<br>en menos de 5 minutos</h2>
+    <p class="section-sub">Sin código. Sin configuraciones complicadas. Blink se conecta a tus fuentes y empieza a trabajar de inmediato.</p>
+  </div>
+  <div class="steps reveal">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-icon">🔗</div>
+      <h3>Detecta el lead</h3>
+      <p>Cuando alguien llena tu formulario, hace clic en tu anuncio o escribe en WhatsApp, Blink lo detecta en tiempo real.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-icon">⚡</div>
+      <h3>Contacta en segundos</h3>
+      <p>En menos de 5 segundos, Blink escribe al lead por WhatsApp con un mensaje personalizado según la fuente.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-icon">🧠</div>
+      <h3>Califica y responde</h3>
+      <p>El agente IA conversa, responde preguntas, maneja objeciones y determina si el lead está listo para avanzar.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-icon">📅</div>
+      <h3>Agenda la reunión</h3>
+      <p>Si el lead califica, Blink agenda una cita con tu asesor directo en su calendario y envía confirmación automática.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="funcionalidades" style="background: rgba(255,255,255,0.01); border-top: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05); max-width: 100%; padding: 100px 40px;">
+  <div style="max-width: 1100px; margin: 0 auto;">
+    <div class="reveal">
+      <p class="section-tag">Funcionalidades</p>
+      <h2>Todo lo que necesita<br>tu equipo comercial</h2>
+      <p class="section-sub">Blink no es un chatbot genérico. Es un asesor comercial entrenado para vender por ti.</p>
+    </div>
+    <div class="features-grid reveal">
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h3>Respuesta en &lt;5 segundos</h3>
+        <p>El 70% de los leads fríos se pierden en las primeras 2 horas por falta de contacto. Blink llega primero, incluso a las 3 AM, antes que cualquier asesor humano.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎯</div>
+        <h3>Calificación automática</h3>
+        <p>Hace las preguntas correctas y clasifica tus leads por temperatura: frío, tibio o listo para cerrar.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📅</div>
+        <h3>Agendamiento inteligente</h3>
+        <p>Conecta con el calendario de tu asesor y agenda reuniones directamente, sin ir y venir de mensajes.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔄</div>
+        <h3>Seguimiento automático</h3>
+        <p>Si el lead no responde, Blink hace seguimiento con mensajes variados hasta lograr una respuesta.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔗</div>
+        <h3>Integración con tu stack</h3>
+        <p>Facebook Ads, Google Ads, HubSpot, Salesforce, Notion y más de 100 apps vía Zapier o Make.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Dashboard en tiempo real</h3>
+        <p>Ve todos tus leads, conversaciones y métricas de conversión desde un panel limpio y claro.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="reveal">
+    <p class="section-tag">Planes</p>
+    <h2>Elige el plan ideal<br>para tu equipo</h2>
+    <p class="section-sub">Sin contratos largos. Implementación incluida. 7 días para que veas resultados.</p>
+  </div>
+
+  <div class="pricing-grid reveal">
+
+    <!-- EDIFY -->
+    <div class="price-card">
+      <p class="price-plan">Plan</p>
+      <p class="price-name">Edify</p>
+      <div class="price-row">
+        <span class="price-original">$400</span>
+        <div class="price-amount"><sup>$</sup>299</div>
+      </div>
+      <p class="price-period">por mes · facturación mensual</p>
+      <div class="impl-badge">🚀 +7 días de implementación incluidos</div>
+      <hr class="price-divider">
+      <ul class="price-features">
+        <li>1 asesor comercial IA</li>
+        <li>1 número WhatsApp Business</li>
+        <li>300 leads / mes<small>Leads adicionales: $0.10 USD c/u</small></li>
+        <li>Calificación de leads con IA</li>
+        <li>Integración con 1 fuente de datos</li>
+        <li>Agendamiento automático</li>
+        <li>Seguimiento inteligente</li>
+        <li>Dashboard de métricas</li>
+        <li>Soporte comercial de lunes a viernes<small>Horario laboral · respuesta en &lt;4 hrs</small></li>
+      </ul>
+      <a href="https://wa.me/51912345678?text=Hola,%20quiero%20el%20plan%20Edify%20de%20Blink" target="_blank" class="btn-price btn-price-outline">Empezar con Edify</a>
+      <p class="price-note">Periodo mensual de 30 días calendario</p>
+    </div>
+
+    <!-- EDIFY PRO (FEATURED) -->
+    <div class="price-card featured">
+      <span class="price-tag-popular">Más popular</span>
+      <p class="price-plan">Plan</p>
+      <p class="price-name">Edify Pro</p>
+      <div class="price-row">
+        <span class="price-original">$600</span>
+        <div class="price-amount"><sup>$</sup>499</div>
+      </div>
+      <p class="price-period">por mes · facturación mensual</p>
+      <div class="impl-badge">🚀 +10 días de implementación el 1er mes</div>
+      <hr class="price-divider">
+      <ul class="price-features">
+        <li>Todo lo incluido en Edify</li>
+        <li>Hasta 3 números WhatsApp Business</li>
+        <li>Fuentes de datos ilimitadas<small>No incluye conectores de pago de terceros</small></li>
+        <li>Vinculación con CRM<small>Movimiento automático en el funnel</small></li>
+        <li>Calificación IA avanzada</li>
+        <li>Agendamiento multi-asesor</li>
+        <li>Seguimiento y reactivación automática</li>
+        <li>Dashboard avanzado + exportación</li>
+        <li>Soporte 24/7 prioritario</li>
+      </ul>
+      <a href="https://wa.me/51912345678?text=Hola,%20quiero%20el%20plan%20Edify%20Pro%20de%20Blink" target="_blank" class="btn-price btn-price-teal">Empezar con Edify Pro</a>
+      <p class="price-note">Periodo mensual de 30 días calendario</p>
+    </div>
+
+    <!-- ENTERPRISE -->
+    <div class="price-card">
+      <p class="price-plan">Plan</p>
+      <p class="price-name">Edify Scale</p>
+      <div class="price-amount" style="font-size: 34px; padding: 8px 0 4px;">A medida</div>
+      <p class="price-period">solución personalizada · leads ilimitados</p>
+      <div class="impl-badge">🚀 Implementación dedicada</div>
+      <hr class="price-divider">
+      <ul class="price-features">
+        <li>Todo lo incluido en Edify Pro</li>
+        <li>Asesores IA ilimitados</li>
+        <li>Números WhatsApp ilimitados</li>
+        <li>Agente IA entrenado con tu data</li>
+        <li>Integraciones y conectores a medida</li>
+        <li>SLA de disponibilidad garantizado</li>
+        <li>Gerente de cuenta dedicado</li>
+        <li>Onboarding presencial o virtual</li>
+        <li>Reportes personalizados</li>
+      </ul>
+      <a href="https://wa.me/51912345678?text=Hola,%20quiero%20info%20del%20plan%20Edify%20Scale%20de%20Blink" target="_blank" class="btn-price btn-price-outline">Hablar con ventas</a>
+      <p class="price-note">Cotización personalizada en 24 hrs</p>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="casos" style="padding-top:0;">
+  <div class="reveal">
+    <p class="section-tag">Casos de éxito</p>
+    <h2>Lo que dicen las inmobiliarias<br>que ya usan Blink</h2>
+  </div>
+  <div class="testimonials-grid reveal">
+    <div class="testimonial">
+      <div class="stars">★★★★★</div>
+      <p>"Teníamos asesores que llegaban a la oficina y los leads ya estaban calificados y con visita agendada. Blink trabaja toda la noche y nosotros llegamos a cerrar, no a buscar."</p>
+      <div class="testimonial-author">
+        <div class="author-avatar">TK</div>
+        <div><div class="author-name">Equipo Comercial</div><div class="author-role">TAKLAB Group</div></div>
+      </div>
+    </div>
+    <div class="testimonial">
+      <div class="stars">★★★★★</div>
+      <p>"Antes perdíamos leads de Urbania porque tardábamos horas en responder. Con Blink respondemos en segundos y nuestra tasa de visitas agendadas se duplicó en el primer mes."</p>
+      <div class="testimonial-author">
+        <div class="author-avatar">GI</div>
+        <div><div class="author-name">Gerencia Comercial</div><div class="author-role">Global Inmobiliaria</div></div>
+      </div>
+    </div>
+    <div class="testimonial">
+      <div class="stars">★★★★★</div>
+      <p>"Lo que más nos sorprendió fue que el agente entiende audios. Los clientes mandan notas de voz preguntando por el proyecto y Blink les responde al instante con toda la info."</p>
+      <div class="testimonial-author">
+        <div class="author-avatar">DO</div>
+        <div><div class="author-name">Director de Ventas</div><div class="author-role">Dommio Inmobiliaria</div></div>
+      </div>
+    </div>
+    <div class="testimonial">
+      <div class="stars">★★★★★</div>
+      <p>"Conectamos Google Ads, Meta y Nexo Inmobiliario al mismo agente. Blink los centraliza todos y responde en nombre de nuestro proyecto con el mismo tono. Es como tener un asesor 24/7."</p>
+      <div class="testimonial-author">
+        <div class="author-avatar">UP</div>
+        <div><div class="author-name">Jefe de Marketing</div><div class="author-role">Urbana Pro</div></div>
+      </div>
+    </div>
+    <div class="testimonial">
+      <div class="stars">★★★★★</div>
+      <p>"Implementación fue en 7 días como prometieron. A la semana ya teníamos el agente corriendo y en el primer mes gestionó más de 200 leads sin que nuestro equipo moviera un dedo."</p>
+      <div class="testimonial-author">
+        <div class="author-avatar">CR</div>
+        <div><div class="author-name">CEO</div><div class="author-role">Capitalia Realty</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" style="padding-top:0;">
+  <div class="reveal">
+    <p class="section-tag">Preguntas frecuentes</p>
+    <h2>Todo lo que necesitas saber</h2>
+  </div>
+  <div class="faq-list reveal">
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">¿Necesito saber programar para usar Blink?<span class="faq-arrow">▼</span></button>
+      <div class="faq-a"><p>No. Blink tiene una interfaz visual y nuestro equipo hace la implementación completa contigo en los primeros 7 días (o 10 en Edify Pro). No necesitas escribir una línea de código.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">¿Qué pasa si supero los 300 leads del plan Edify?<span class="faq-arrow">▼</span></button>
+      <div class="faq-a"><p>Se cobra $0.10 USD por cada lead adicional sobre los 300 incluidos. Recibirás un resumen mensual con el detalle de uso para que tengas control total sobre tu inversión.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">¿El agente puede sonar como mi marca?<span class="faq-arrow">▼</span></button>
+      <div class="faq-a"><p>Sí. Defines el nombre, el tono (formal, cercano, técnico) y los mensajes base. Blink usa IA para responder naturalmente dentro de ese estilo en cada conversación.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">¿Es legal usar un agente IA en WhatsApp Business?<span class="faq-arrow">▼</span></button>
+      <div class="faq-a"><p>Sí. Blink opera sobre la API oficial de WhatsApp Business de Meta. Tus envíos están dentro de las políticas permitidas, sin riesgo de bloqueo del número.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">¿Puedo cancelar en cualquier momento?<span class="faq-arrow">▼</span></button>
+      <div class="faq-a"><p>Sí. No hay contratos de permanencia. Cancelas desde tu panel con un clic y mantienes acceso hasta el fin del período ya pagado.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">¿Qué incluye la implementación?<span class="faq-arrow">▼</span></button>
+      <div class="faq-a"><p>Configuración del agente con tu tono de marca, conexión de fuentes de leads, integración con tu calendario, pruebas de flujo completo y capacitación a tu equipo. Todo acompañado por nuestro equipo de onboarding.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="final-cta reveal">
+  <p class="section-tag">Empieza hoy</p>
+  <h2>Tu competencia ya responde<br>en segundos. <em>¿Y tú?</em></h2>
+  <p>Activa Blink y convierte más leads desde el primer día. Implementación incluida en todos los planes.</p>
+  <a href="#pricing" class="btn-primary" style="font-size:17px; padding:17px 44px; display:inline-block;">Activar mi agente Blink →</a>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <span class="logo">blink</span>
+  <p>© 2025 Blink. Todos los derechos reservados.</p>
+  <div style="display:flex; gap:24px;">
+    <a href="#">Términos</a>
+    <a href="#">Privacidad</a>
+    <a href="https://wa.me/51912345678" target="_blank">Contacto</a>
+  </div>
+</footer>
+
+<script>
+// ── CHAT ANIMATION ──
+const chatBody = document.getElementById('chatBody');
+let typingEl = null;
+
+const T = () => {
+  const h = new Date().getHours();
+  const m = String(new Date().getMinutes()).padStart(2,'0');
+  return `${h}:${m}`;
+};
+
+// Conversation script: type, delay(ms), content
+// type: 'out'=agent, 'in'=lead, 'typing', 'photo', 'audio', 'confirmed'
+const script = [
+  // Agent initiates
+  { t:'typing', d:600 },
+  { t:'out', d:1400, txt:'Hola Carlos 👋, soy el asistente de *Griin Miraflores*. Vi que te registraste en nuestro sitio. ¿Estás buscando un departamento para vivir o como inversión?' },
+
+  // Lead responds
+  { t:'typing', d:2600 },
+  { t:'in',  d:3200, txt:'Para vivir. Quiero algo en Miraflores, con buena vista si es posible 🙏' },
+
+  // Agent sends description + photos
+  { t:'typing', d:4000 },
+  { t:'out', d:4700, txt:'¡Perfecto! Griin es un proyecto boutique en el corazón de Miraflores, a 3 cuadras del malecón. 14 pisos, acabados premium y certificación sostenible 🌿' },
+  { t:'photo', d:5400, label:'Vista exterior · Griin Miraflores', color1:'#1a3a2a', color2:'#0d4030', icon:'🏢' },
+  { t:'photo', d:6200, label:'Sala modelo · Piso 10', color1:'#2a2a1a', color2:'#3a3010', icon:'🛋️' },
+
+  // Lead sends audio
+  { t:'typing', d:7200 },
+  { t:'audio', d:7900 },
+
+  // Agent responds to audio
+  { t:'typing', d:9000 },
+  { t:'out', d:9900, txt:'Escuché tu mensaje 🎧 — entiendo que buscas 2 dormitorios, vista preferentemente al mar, y que te mudarías entre julio y setiembre. ¡Tenemos justo lo que necesitas!' },
+
+  // Agent recommends unit
+  { t:'typing', d:11200 },
+  { t:'out', d:12000, txt:'Te recomiendo el *Dpto. 1002* 🏠\n\n• 2 dorm. + estudio · 78 m²\n• Vista panorámica al mar 🌊\n• Piso 10 · Entrega agosto\n• Precio: *$245,000*\n\n¿Te gustaría agendar una visita?' },
+
+  // Lead asks about visit
+  { t:'typing', d:13400 },
+  { t:'in',  d:14000, txt:'Sí me interesa! ¿Tienen disponibilidad el jueves?' },
+
+  // Agent suggests slots
+  { t:'typing', d:14800 },
+  { t:'out', d:15600, txt:'Claro 📅 Tenemos el *miércoles 30 a las 10 AM* o el *viernes 2 a las 3 PM*. ¿Alguno te va bien?' },
+
+  // Lead proposes different time
+  { t:'typing', d:16800 },
+  { t:'in',  d:17400, txt:'¿Me pueden dar el jueves 1 a las 11 AM mejor?' },
+
+  // Agent checks and confirms
+  { t:'typing', d:18200 },
+  { t:'out', d:19200, txt:'Un momento, verifico disponibilidad... ⏳' },
+  { t:'typing', d:19800 },
+  { t:'out', d:20800, txt:'✅ ¡Confirmado! El *jueves 1 de mayo a las 11:00 AM* está disponible. Te agendo ahora mismo con nuestra asesora Valeria.' },
+
+  // Confirmed card
+  { t:'confirmed', d:21800 },
+];
+
+function addMsg(el) {
+  if (typingEl) { typingEl.remove(); typingEl = null; }
+  chatBody.appendChild(el);
+  // smooth scroll
+  chatBody.scrollTo({ top: chatBody.scrollHeight, behavior: 'smooth' });
+}
+
+function makeOut(txt) {
+  const el = document.createElement('div');
+  el.className = 'msg msg-out';
+  el.innerHTML = txt.replace(/\*(.*?)\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>') + `<span class="msg-time">${T()} ✓✓</span>`;
+  return el;
+}
+
+function makeIn(txt) {
+  const el = document.createElement('div');
+  el.className = 'msg msg-in';
+  el.innerHTML = txt + `<span class="msg-time">${T()}</span>`;
+  return el;
+}
+
+function makePhoto(label, color1, color2, icon) {
+  const el = document.createElement('div');
+  el.className = 'msg-photo';
+  el.innerHTML = `
+    <div class="photo-inner">
+      <svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="pg${Math.random().toString(36).substr(2,4)}" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="${color1}"/>
+            <stop offset="100%" stop-color="${color2}"/>
+          </linearGradient>
+        </defs>
+        <rect width="200" height="120" fill="url(#pg${Math.random().toString(36).substr(2,4)})"/>
+        <!-- building silhouette -->
+        <rect x="60" y="20" width="80" height="90" rx="4" fill="rgba(255,255,255,0.07)"/>
+        <rect x="70" y="30" width="12" height="12" rx="2" fill="rgba(255,255,255,0.15)"/>
+        <rect x="88" y="30" width="12" height="12" rx="2" fill="rgba(111,255,233,0.3)"/>
+        <rect x="106" y="30" width="12" height="12" rx="2" fill="rgba(255,255,255,0.15)"/>
+        <rect x="70" y="48" width="12" height="12" rx="2" fill="rgba(111,255,233,0.2)"/>
+        <rect x="88" y="48" width="12" height="12" rx="2" fill="rgba(255,255,255,0.15)"/>
+        <rect x="106" y="48" width="12" height="12" rx="2" fill="rgba(255,255,255,0.15)"/>
+        <rect x="70" y="66" width="12" height="12" rx="2" fill="rgba(255,255,255,0.15)"/>
+        <rect x="88" y="66" width="12" height="12" rx="2" fill="rgba(111,255,233,0.25)"/>
+        <rect x="106" y="66" width="12" height="12" rx="2" fill="rgba(255,255,255,0.15)"/>
+        <rect x="85" y="88" width="30" height="22" rx="2" fill="rgba(255,255,255,0.1)"/>
+        <!-- label bg -->
+        <rect x="0" y="95" width="200" height="25" fill="rgba(0,0,0,0.4)"/>
+        <text x="8" y="111" font-size="10" fill="rgba(255,255,255,0.7)" font-family="sans-serif">${icon} ${label}</text>
+      </svg>
+    </div>
+    <div class="photo-caption">Ver más fotos →<span class="msg-time" style="color:#001828;opacity:.6">${T()} ✓✓</span></div>
+  `;
+  return el;
+}
+
+function makeAudio() {
+  const el = document.createElement('div');
+  el.className = 'msg msg-in msg-audio';
+  el.innerHTML = `
+    <div class="audio-play">▶</div>
+    <div class="audio-wave">
+      <span></span><span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+    <span class="audio-dur">0:18</span>
+    <span class="msg-time" style="position:absolute;bottom:5px;right:10px">${T()}</span>
+  `;
+  el.style.position = 'relative';
+  return el;
+}
+
+function makeConfirmed() {
+  const el = document.createElement('div');
+  el.className = 'confirmed-card';
+  el.innerHTML = `
+    <div class="confirmed-header">
+      <div class="confirmed-icon">✓</div>
+      <span class="confirmed-title">¡Visita agendada! 🎉</span>
+    </div>
+    <div class="confirmed-detail">
+      📅 Jueves 1 de mayo · 11:00 AM<br>
+      👤 Asesora: <strong style="color:#00e8b0">Valeria Torres</strong><br>
+      📍 Griin Miraflores · Av. Pardo 520<br>
+      <br>
+      <span style="color:rgba(168,240,228,0.6);font-size:10.5px">Recibirás confirmación en tu correo 📧</span>
+    </div>
+  `;
+  return el;
+}
+
+function makeTyping() {
+  const el = document.createElement('div');
+  el.className = 'typing-indicator';
+  el.innerHTML = '<span></span><span></span><span></span>';
+  return el;
+}
+
+function runScript(s) {
+  s.forEach(step => {
+    setTimeout(() => {
+      if (step.t === 'typing') {
+        typingEl = makeTyping();
+        chatBody.appendChild(typingEl);
+        chatBody.scrollTo({ top: chatBody.scrollHeight, behavior: 'smooth' });
+      } else if (step.t === 'out')       addMsg(makeOut(step.txt));
+      else if (step.t === 'in')          addMsg(makeIn(step.txt));
+      else if (step.t === 'photo')       addMsg(makePhoto(step.label, step.color1, step.color2, step.icon));
+      else if (step.t === 'audio')       addMsg(makeAudio());
+      else if (step.t === 'confirmed')   addMsg(makeConfirmed());
+    }, step.d);
+  });
+}
+
+runScript(script);
+
+// Loop: restart after full sequence + 4s pause
+const loopDelay = 21800 + 4000;
+setInterval(() => {
+  chatBody.innerHTML = '';
+  typingEl = null;
+  runScript(script);
+}, loopDelay);
+
+// ── PARTICLE CANVAS BACKGROUND ──
+(function() {
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles = [], mouse = { x: -999, y: -999 };
+  const PARTICLE_COUNT = 80;
+  const CONNECTION_DIST = 140;
+
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+
+  function Particle() {
+    this.x = Math.random() * W;
+    this.y = Math.random() * H;
+    this.vx = (Math.random() - 0.5) * 0.35;
+    this.vy = (Math.random() - 0.5) * 0.35;
+    this.r = Math.random() * 1.5 + 0.5;
+    this.alpha = Math.random() * 0.4 + 0.1;
+    this.color = Math.random() > 0.6 ? '111,255,233' : '3,95,255';
+  }
+
+  Particle.prototype.update = function() {
+    this.x += this.vx;
+    this.y += this.vy;
+    if (this.x < 0 || this.x > W) this.vx *= -1;
+    if (this.y < 0 || this.y > H) this.vy *= -1;
+    // subtle mouse repulsion
+    const dx = this.x - mouse.x, dy = this.y - mouse.y;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    if (dist < 80) {
+      this.x += dx / dist * 0.8;
+      this.y += dy / dist * 0.8;
+    }
+  };
+
+  function init() {
+    resize();
+    particles = [];
+    for (let i = 0; i < PARTICLE_COUNT; i++) particles.push(new Particle());
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    // Draw subtle dot grid
+    ctx.fillStyle = 'rgba(111,255,233,0.04)';
+    const gridSize = 60;
+    for (let x = 0; x < W; x += gridSize) {
+      for (let y = 0; y < H; y += gridSize) {
+        ctx.beginPath();
+        ctx.arc(x, y, 1, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // Draw connections
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < CONNECTION_DIST) {
+          const opacity = (1 - dist / CONNECTION_DIST) * 0.12;
+          ctx.beginPath();
+          ctx.strokeStyle = `rgba(3,95,255,${opacity})`;
+          ctx.lineWidth = 0.8;
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.stroke();
+        }
+      }
+    }
+
+    // Draw particles
+    particles.forEach(p => {
+      p.update();
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${p.color},${p.alpha})`;
+      ctx.fill();
+    });
+
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', () => { resize(); });
+  window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+
+  init();
+  draw();
+})();
+
+function toggleFaq(btn) {
+  const item = btn.closest('.faq-item');
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+  if (!isOpen) item.classList.add('open');
+}
+
+// ── SCROLL REVEAL ──
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// ── EXIT INTENT POPUP ──
+let popupShown = false;
+let popupTimer = null;
+
+function showPopup() {
+  if (popupShown) return;
+  popupShown = true;
+  document.getElementById('exitPopup').classList.add('active');
+}
+
+function closePopup() {
+  document.getElementById('exitPopup').classList.remove('active');
+}
+
+function clearError(el) {
+  el.style.borderColor = '';
+  document.getElementById('popupError').style.display = 'none';
+}
+
+function submitPopup() {
+  const name    = document.getElementById('pName');
+  const company = document.getElementById('pCompany');
+  const phone   = document.getElementById('pPhone');
+  const email   = document.getElementById('pEmail');
+  const errEl   = document.getElementById('popupError');
+
+  let valid = true;
+
+  [name, company, phone, email].forEach(f => { f.style.borderColor = ''; });
+
+  if (!name.value.trim()) { name.style.borderColor = '#ff6b6b'; valid = false; }
+  if (!company.value.trim()) { company.style.borderColor = '#ff6b6b'; valid = false; }
+  if (!phone.value.trim() || phone.value.trim().length < 7) { phone.style.borderColor = '#ff6b6b'; valid = false; }
+  const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRe.test(email.value.trim())) { email.style.borderColor = '#ff6b6b'; valid = false; }
+
+  if (!valid) {
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const data = {
+    nombre: name.value.trim(),
+    empresa: company.value.trim(),
+    whatsapp: phone.value.trim(),
+    email: email.value.trim(),
+    fecha: new Date().toLocaleString('es-PE', { timeZone: 'America/Lima' })
+  };
+
+  // Enviar a Google Sheets
+  const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbyzu754ycA6ahe920Duo2iU8W-Aqv_T7hwunU-l-1mjGhfmtBHcUgKb-LtsqfOQDadpOQ/exec';
+
+  const btn = document.querySelector('.popup-btn');
+  btn.textContent = 'Enviando...';
+  btn.disabled = true;
+
+  fetch(SHEETS_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  })
+  .then(() => {
+    btn.textContent = '✓ ¡Listo! Te contactaremos muy pronto';
+    btn.style.background = 'linear-gradient(135deg,#00c896,#00a8d8)';
+    setTimeout(closePopup, 2200);
+  })
+  .catch(() => {
+    // Even if fetch fails silently (no-cors), data likely went through
+    btn.textContent = '✓ ¡Listo! Te contactaremos muy pronto';
+    btn.style.background = 'linear-gradient(135deg,#00c896,#00a8d8)';
+    setTimeout(closePopup, 2200);
+  });
+}
+
+// Desktop: mouse leaves viewport
+document.addEventListener('mouseleave', (e) => {
+  if (e.clientY <= 0 && !popupShown) showPopup();
+});
+
+// Mobile: scroll back up near top after scrolling down
+let maxScroll = 0;
+window.addEventListener('scroll', () => {
+  const current = window.scrollY;
+  if (current > maxScroll) maxScroll = current;
+  if (maxScroll > 600 && current < 100 && !popupShown) showPopup();
+});
+
+// Fallback: show after 45 seconds
+popupTimer = setTimeout(showPopup, 45000);
+</script>
+</body>
+</html>
