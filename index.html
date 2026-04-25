@@ -235,8 +235,20 @@
   .feature-card h3 { font-family: 'Poppins', sans-serif; font-size: 17px; font-weight: 700; margin-bottom: 8px; }
   .feature-card p { font-size: 13.5px; color: var(--text-muted); line-height: 1.65; }
 
+  /* ── PRICING SWITCHER ── */
+  .billing-toggle { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 32px; }
+  .billing-label { font-size: 14px; color: var(--text-muted); font-weight: 400; transition: color 0.2s; }
+  .billing-label.active { color: var(--white); font-weight: 500; }
+  .switch { position: relative; width: 48px; height: 26px; flex-shrink: 0; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .switch-slider { position: absolute; inset: 0; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); border-radius: 100px; cursor: pointer; transition: background 0.3s; }
+  .switch-slider::before { content: ''; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px; background: var(--white); border-radius: 50%; transition: transform 0.3s; }
+  .switch input:checked + .switch-slider { background: var(--teal); border-color: var(--teal); }
+  .switch input:checked + .switch-slider::before { transform: translateX(22px); background: var(--navy); }
+  .billing-save { background: rgba(111,255,233,0.12); border: 1px solid rgba(111,255,233,0.3); color: var(--teal); font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 100px; letter-spacing: 0.06em; text-transform: uppercase; }
+
   /* ── PRICING ── */
-  .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 60px; align-items: stretch; }
+  .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 32px; align-items: stretch; }
   .price-features { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; flex: 1; }
 
   .price-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 34px 30px; position: relative; display: flex; flex-direction: column; }
@@ -247,11 +259,12 @@
   .price-plan { font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.12em; }
   .price-name { font-family: 'Poppins', sans-serif; font-size: 22px; font-weight: 800; margin-bottom: 16px; color: var(--white); }
 
-  .price-row { display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; }
+  .price-row { display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; min-height: 56px; }
   .price-original { font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 400; color: var(--text-muted); text-decoration: line-through; }
-  .price-amount { font-family: 'Poppins', sans-serif; font-size: 46px; font-weight: 800; line-height: 1; }
+  .price-amount { font-family: 'Poppins', sans-serif; font-size: 46px; font-weight: 800; line-height: 1; transition: all 0.3s; }
   .price-amount sup { font-size: 20px; vertical-align: super; }
-  .price-period { font-size: 13px; color: var(--text-muted); margin: 4px 0 8px; }
+  .price-period { font-size: 13px; color: var(--text-muted); margin: 4px 0 8px; min-height: 20px; }
+  .price-period-tri { display: none; }
 
   .impl-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(111,255,233,0.08); border: 1px solid rgba(111,255,233,0.2); border-radius: 100px; padding: 4px 10px; font-size: 11px; color: var(--teal); margin-bottom: 20px; }
 
@@ -271,14 +284,26 @@
 
   .price-note { font-size: 11.5px; color: var(--text-muted); text-align: center; margin-top: 10px; line-height: 1.5; }
 
-  /* ── TESTIMONIALS ── */
-  .testimonials-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 14px; margin-top: 56px; }
-  .testimonial { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 26px; }
+  /* ── TESTIMONIALS MARQUEE ── */
+  .marquee-outer {
+    position: relative; overflow: hidden; cursor: grab; user-select: none;
+  }
+  .marquee-outer::before, .marquee-outer::after {
+    content: ''; position: absolute; top: 0; bottom: 0; width: 120px; z-index: 2; pointer-events: none;
+  }
+  .marquee-outer::before { left: 0; background: linear-gradient(to right, var(--navy), transparent); }
+  .marquee-outer::after  { right: 0; background: linear-gradient(to left, var(--navy), transparent); }
+  .marquee-track { display: flex; gap: 16px; width: max-content; animation: marqueeScroll 32s linear infinite; padding: 8px 0 20px; }
+  .marquee-track.paused { animation-play-state: paused; }
+  @keyframes marqueeScroll { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+  .testimonial-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 26px 28px; width: 320px; flex-shrink: 0; transition: border-color 0.3s, background 0.3s; }
+  .testimonial-card:hover { border-color: rgba(111,255,233,0.2); background: rgba(111,255,233,0.03); }
+  .testimonial-card p { font-size: 14px; line-height: 1.7; color: #c8d0e8; margin-bottom: 18px; }
   .stars { color: var(--teal); font-size: 13px; margin-bottom: 12px; }
-  .testimonial p { font-size: 14.5px; line-height: 1.7; color: #c8d0e8; margin-bottom: 18px; }
   .testimonial-author { display: flex; align-items: center; gap: 10px; }
   .author-avatar { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, var(--blue), var(--teal)); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: var(--navy); flex-shrink: 0; }
   .author-name { font-size: 14px; font-weight: 500; }
+  .author-role { font-size: 11.5px; color: var(--text-muted); }
   .author-role { font-size: 11.5px; color: var(--text-muted); }
 
   /* ── FAQ ── */
@@ -380,7 +405,8 @@
     .hero-badge { margin: 0 auto 20px; }
     .hero-actions { justify-content: center; }
     .hero-stats { justify-content: center; flex-wrap: wrap; gap: 20px; }
-    .hero-right { order: -1; width: 100%; }
+    .hero-right { order: 1; width: 100%; }
+    .hero-left { order: 0; }
     .demo-container { max-width: 100%; }
 
     /* Chat responsive fixes */
@@ -406,6 +432,40 @@
     .source-tag { gap: 5px !important; }
     .source-item { font-size: 10px; padding: 4px 9px; }
   }
+
+  /* ── MOBILE PRICING CAROUSEL ── */
+  @media (max-width: 900px) {
+    .pricing-wrapper {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+      margin: 0 -20px;
+      padding: 0 20px 16px;
+    }
+    .pricing-wrapper::-webkit-scrollbar { display: none; }
+    .pricing-grid {
+      display: flex;
+      flex-direction: row;
+      gap: 14px;
+      grid-template-columns: none;
+      width: max-content;
+      align-items: stretch;
+    }
+    .price-card {
+      width: 78vw;
+      max-width: 300px;
+      flex-shrink: 0;
+      scroll-snap-align: start;
+    }
+    .pricing-dots { display: flex; justify-content: center; gap: 6px; margin-top: 14px; }
+    .pricing-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.2); transition: background 0.3s, transform 0.3s; }
+    .pricing-dot.active { background: var(--teal); transform: scale(1.3); }
+    .billing-toggle { flex-wrap: wrap; gap: 10px; }
+  }
+  @media (min-width: 901px) {
+    .pricing-dots { display: none; }
+  }
 </style>
 </head>
 <body>
@@ -422,41 +482,23 @@
 <div class="popup-overlay" id="exitPopup">
   <div class="popup-box">
     <button class="popup-close" onclick="closePopup()">✕</button>
-    <div class="popup-gift">🎁</div>
-    <div class="popup-tag">Oferta exclusiva por tiempo limitado</div>
-    <h3>Antes de irte,<br>obtén <em>1 mes gratis</em></h3>
-    <p>Agenda una llamada de 20 min con nuestro equipo y conoce cómo Blink puede transformar tu proceso comercial. Si contratas por 3 meses, el primero va por nuestra cuenta.</p>
-
-    <div class="popup-offer">
-      <div class="popup-offer-row">
-        <span class="popup-offer-label">Plan Edify (3 meses)</span>
-        <span class="popup-offer-value">$897</span>
-      </div>
-      <div class="popup-offer-divider"></div>
-      <div class="popup-offer-row">
-        <span class="popup-offer-label">Descuento 1er mes gratis</span>
-        <span class="popup-offer-highlight">− $299</span>
-      </div>
-      <div class="popup-offer-divider"></div>
-      <div class="popup-offer-row">
-        <span class="popup-offer-label" style="font-weight:600; color: var(--white);">Total</span>
-        <span class="popup-offer-highlight" style="font-size:16px;">$598</span>
-      </div>
-    </div>
+    <div class="popup-gift">📞</div>
+    <div class="popup-tag">Solo por hoy</div>
+    <h3>Agenda una llamada y<br>obtén hasta <em>50% off</em></h3>
+    <p>Conversa 20 minutos con nuestro equipo. Sin compromiso. Los que agendan hoy acceden a un descuento de hasta el 50% en su <strong style="color:var(--white)">primer mes</strong>.</p>
 
     <div class="popup-form" id="popupForm">
       <div class="popup-input-row">
         <input type="text" class="popup-input" id="pName" placeholder="Tu nombre *" oninput="clearError(this)">
-        <input type="text" class="popup-input" id="pCompany" placeholder="Empresa *" oninput="clearError(this)">
+        <input type="tel" class="popup-input" id="pPhone" placeholder="WhatsApp (+51 ...) *" oninput="clearError(this)">
       </div>
-      <input type="tel" class="popup-input" id="pPhone" placeholder="WhatsApp (+51 ...) *" oninput="clearError(this)">
       <input type="email" class="popup-input" id="pEmail" placeholder="Correo electrónico *" oninput="clearError(this)">
-      <div id="popupError" style="color:#ff6b6b;font-size:12.5px;text-align:left;display:none;padding:4px 2px;">⚠ Por favor completa todos los campos correctamente.</div>
+      <div id="popupError" style="color:#ff6b6b;font-size:12.5px;text-align:left;display:none;padding:4px 2px;">⚠ Por favor completa todos los campos.</div>
     </div>
 
-    <button class="popup-btn" onclick="submitPopup()">📅 Agendar mi llamada gratis →</button>
+    <button class="popup-btn" onclick="submitPopup()">Agendar mi llamada gratis →</button>
     <br>
-    <button class="popup-skip" onclick="closePopup()">No, prefiero pagar precio completo</button>
+    <button class="popup-skip" onclick="closePopup()">Ahora no</button>
   </div>
 </div>
 
@@ -516,22 +558,9 @@
       <!-- Phone -->
       <div class="phone-frame">
         <div class="phone-header">
-          <div class="p-avatar">
-            <svg width="22" height="22" viewBox="0 0 100 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <!-- b stem -->
-              <rect x="18" y="8" width="16" height="90" rx="8" fill="#001859"/>
-              <!-- circle of b -->
-              <circle cx="54" cy="72" r="28" fill="#001859"/>
-              <circle cx="54" cy="72" r="19" fill="white"/>
-              <!-- chat bubble tail -->
-              <path d="M34 88 L26 104 L48 94" fill="#001859"/>
-              <!-- eyes -->
-              <circle cx="46" cy="70" r="4" fill="#001859"/>
-              <circle cx="62" cy="70" r="4" fill="#001859"/>
-            </svg>
-          </div>
+          <div class="p-avatar" style="background:transparent; padding:0; overflow:hidden;"><img src="data:image/png;base64,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" style="width:36px;height:36px;border-radius:50%;object-fit:cover;" /></div>
           <div class="p-info">
-            <div class="p-name">Agente Blink IA</div>
+            <div class="p-name">Agente Blink</div>
             <div class="p-status">En línea</div>
           </div>
           <div class="p-meta">WhatsApp Business</div>
@@ -660,133 +689,200 @@
     <p class="section-tag">Planes</p>
     <h2>Elige el plan ideal<br>para tu equipo</h2>
     <p class="section-sub">Sin contratos largos. Implementación incluida. 7 días para que veas resultados.</p>
-  </div>
 
-  <div class="pricing-grid reveal">
-
-    <!-- EDIFY -->
-    <div class="price-card">
-      <p class="price-plan">Plan</p>
-      <p class="price-name">Edify</p>
-      <div class="price-row">
-        <span class="price-original">$400</span>
-        <div class="price-amount"><sup>$</sup>299</div>
-      </div>
-      <p class="price-period">por mes · facturación mensual</p>
-      <div class="impl-badge">🚀 +7 días de implementación incluidos</div>
-      <hr class="price-divider">
-      <ul class="price-features">
-        <li>1 asesor comercial IA</li>
-        <li>1 número WhatsApp Business</li>
-        <li>300 leads / mes<small>Leads adicionales: $0.10 USD c/u</small></li>
-        <li>Calificación de leads con IA</li>
-        <li>Integración con 1 fuente de datos</li>
-        <li>Agendamiento automático</li>
-        <li>Seguimiento inteligente</li>
-        <li>Dashboard de métricas</li>
-        <li>Soporte comercial de lunes a viernes<small>Horario laboral · respuesta en &lt;4 hrs</small></li>
-      </ul>
-      <a href="https://wa.me/51912345678?text=Hola,%20quiero%20el%20plan%20Edify%20de%20Blink" target="_blank" class="btn-price btn-price-outline">Empezar con Edify</a>
-      <p class="price-note">Periodo mensual de 30 días calendario</p>
-    </div>
-
-    <!-- EDIFY PRO (FEATURED) -->
-    <div class="price-card featured">
-      <span class="price-tag-popular">Más popular</span>
-      <p class="price-plan">Plan</p>
-      <p class="price-name">Edify Pro</p>
-      <div class="price-row">
-        <span class="price-original">$600</span>
-        <div class="price-amount"><sup>$</sup>499</div>
-      </div>
-      <p class="price-period">por mes · facturación mensual</p>
-      <div class="impl-badge">🚀 +10 días de implementación el 1er mes</div>
-      <hr class="price-divider">
-      <ul class="price-features">
-        <li>Todo lo incluido en Edify</li>
-        <li>Hasta 3 números WhatsApp Business</li>
-        <li>Fuentes de datos ilimitadas<small>No incluye conectores de pago de terceros</small></li>
-        <li>Vinculación con CRM<small>Movimiento automático en el funnel</small></li>
-        <li>Calificación IA avanzada</li>
-        <li>Agendamiento multi-asesor</li>
-        <li>Seguimiento y reactivación automática</li>
-        <li>Dashboard avanzado + exportación</li>
-        <li>Soporte 24/7 prioritario</li>
-      </ul>
-      <a href="https://wa.me/51912345678?text=Hola,%20quiero%20el%20plan%20Edify%20Pro%20de%20Blink" target="_blank" class="btn-price btn-price-teal">Empezar con Edify Pro</a>
-      <p class="price-note">Periodo mensual de 30 días calendario</p>
-    </div>
-
-    <!-- ENTERPRISE -->
-    <div class="price-card">
-      <p class="price-plan">Plan</p>
-      <p class="price-name">Edify Scale</p>
-      <div class="price-amount" style="font-size: 34px; padding: 8px 0 4px;">A medida</div>
-      <p class="price-period">solución personalizada · leads ilimitados</p>
-      <div class="impl-badge">🚀 Implementación dedicada</div>
-      <hr class="price-divider">
-      <ul class="price-features">
-        <li>Todo lo incluido en Edify Pro</li>
-        <li>Asesores IA ilimitados</li>
-        <li>Números WhatsApp ilimitados</li>
-        <li>Agente IA entrenado con tu data</li>
-        <li>Integraciones y conectores a medida</li>
-        <li>SLA de disponibilidad garantizado</li>
-        <li>Gerente de cuenta dedicado</li>
-        <li>Onboarding presencial o virtual</li>
-        <li>Reportes personalizados</li>
-      </ul>
-      <a href="https://wa.me/51912345678?text=Hola,%20quiero%20info%20del%20plan%20Edify%20Scale%20de%20Blink" target="_blank" class="btn-price btn-price-outline">Hablar con ventas</a>
-      <p class="price-note">Cotización personalizada en 24 hrs</p>
+    <!-- BILLING TOGGLE -->
+    <div class="billing-toggle">
+      <span class="billing-label active" id="labelMonthly">Mensual</span>
+      <label class="switch">
+        <input type="checkbox" id="billingSwitch" onchange="toggleBilling(this)">
+        <span class="switch-slider"></span>
+      </label>
+      <span class="billing-label" id="labelQuarterly">Trimestral</span>
+      <span class="billing-save">Ahorra 1 mes</span>
     </div>
   </div>
+
+  <div class="pricing-wrapper">
+    <div class="pricing-grid reveal" id="pricingGrid">
+
+      <!-- EDIFY -->
+      <div class="price-card">
+        <p class="price-plan">Plan</p>
+        <p class="price-name">Edify</p>
+        <div class="price-row">
+          <span class="price-original" id="e1-original"></span>
+          <div class="price-amount" id="e1-amount"><sup>$</sup>400</div>
+        </div>
+        <p class="price-period" id="e1-period">por mes · facturación mensual</p>
+        <div class="impl-badge">🚀 +7 días de implementación incluidos</div>
+        <hr class="price-divider">
+        <ul class="price-features">
+          <li>1 asesor comercial IA</li>
+          <li>1 número WhatsApp Business</li>
+          <li>400 leads / mes<small>Leads adicionales: $0.15 USD c/u</small></li>
+          <li>Calificación de leads con IA</li>
+          <li>Integración con 1 fuente de datos</li>
+          <li>Agendamiento automático</li>
+          <li>Dashboard de métricas</li>
+        </ul>
+        <a href="https://wa.me/51912345678?text=Hola,%20quiero%20el%20plan%20Edify%20de%20Blink" target="_blank" class="btn-price btn-price-outline">Empezar con Edify</a>
+        <p class="price-note" id="e1-note">Periodo de 30 días calendario</p>
+      </div>
+
+      <!-- EDIFY PRO (FEATURED) -->
+      <div class="price-card featured">
+        <span class="price-tag-popular">Más popular</span>
+        <p class="price-plan">Plan</p>
+        <p class="price-name">Edify Pro</p>
+        <div class="price-row">
+          <span class="price-original" id="e2-original"></span>
+          <div class="price-amount" id="e2-amount"><sup>$</sup>600</div>
+        </div>
+        <p class="price-period" id="e2-period">por mes · facturación mensual</p>
+        <div class="impl-badge">🚀 +10 días de implementación el 1er mes</div>
+        <hr class="price-divider">
+        <ul class="price-features">
+          <li>Todo lo incluido en Edify</li>
+          <li>600 leads / mes<small>Leads adicionales: $0.15 USD c/u</small></li>
+          <li>Hasta 3 números WhatsApp Business</li>
+          <li>Fuentes de datos ilimitadas</li>
+          <li>Vinculación con CRM</li>
+          <li>Calificación IA avanzada</li>
+          <li>Agendamiento multi-asesor</li>
+          <li>Seguimiento y reactivación automática</li>
+          <li>Dashboard avanzado + exportación</li>
+        </ul>
+        <a href="https://wa.me/51912345678?text=Hola,%20quiero%20el%20plan%20Edify%20Pro%20de%20Blink" target="_blank" class="btn-price btn-price-teal">Empezar con Edify Pro</a>
+        <p class="price-note" id="e2-note">Periodo de 30 días calendario</p>
+      </div>
+
+      <!-- EDIFY SCALE -->
+      <div class="price-card">
+        <p class="price-plan">Plan</p>
+        <p class="price-name">Edify Scale</p>
+        <div class="price-row">
+          <div class="price-amount" style="font-size:32px;padding-top:8px;">A medida</div>
+        </div>
+        <p class="price-period">solución personalizada · leads ilimitados</p>
+        <div class="impl-badge">🚀 Implementación dedicada</div>
+        <hr class="price-divider">
+        <ul class="price-features">
+          <li>Todo lo incluido en Edify Pro</li>
+          <li>Asesores IA ilimitados</li>
+          <li>Números WhatsApp ilimitados</li>
+          <li>Agente IA entrenado con tu data</li>
+          <li>Integraciones y conectores a medida</li>
+          <li>SLA de disponibilidad garantizado</li>
+          <li>Gerente de cuenta dedicado</li>
+          <li>Onboarding presencial o virtual</li>
+          <li>Reportes personalizados</li>
+        </ul>
+        <a href="https://wa.me/51912345678?text=Hola,%20quiero%20info%20del%20plan%20Edify%20Scale%20de%20Blink" target="_blank" class="btn-price btn-price-outline">Hablar con ventas</a>
+        <p class="price-note">Cotización personalizada en 24 hrs</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Mobile dots indicator -->
+  <div class="pricing-dots" id="pricingDots">
+    <div class="pricing-dot active"></div>
+    <div class="pricing-dot"></div>
+    <div class="pricing-dot"></div>
+  </div>
+
 </section>
 
 <!-- TESTIMONIALS -->
-<section id="casos" style="padding-top:0;">
-  <div class="reveal">
+<section id="casos" style="padding-top:0; padding-left:0; padding-right:0; max-width:100%; overflow:hidden;">
+  <div class="reveal" style="padding: 0 40px; max-width:1100px; margin:0 auto;">
     <p class="section-tag">Casos de éxito</p>
     <h2>Lo que dicen las inmobiliarias<br>que ya usan Blink</h2>
   </div>
-  <div class="testimonials-grid reveal">
-    <div class="testimonial">
-      <div class="stars">★★★★★</div>
-      <p>"Teníamos asesores que llegaban a la oficina y los leads ya estaban calificados y con visita agendada. Blink trabaja toda la noche y nosotros llegamos a cerrar, no a buscar."</p>
-      <div class="testimonial-author">
-        <div class="author-avatar">TK</div>
-        <div><div class="author-name">Equipo Comercial</div><div class="author-role">TAKLAB Group</div></div>
+
+  <div class="marquee-outer" id="marqueeOuter" style="margin-top:40px;">
+    <div class="marquee-track" id="marqueeTrack">
+      <!-- Cards duplicated for seamless loop -->
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p>"Teníamos asesores que llegaban a la oficina y los leads ya estaban calificados y con visita agendada. Blink trabaja toda la noche y nosotros llegamos a cerrar, no a buscar."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">TK</div>
+          <div><div class="author-name">Equipo Comercial</div><div class="author-role">TAKLAB Group</div></div>
+        </div>
       </div>
-    </div>
-    <div class="testimonial">
-      <div class="stars">★★★★★</div>
-      <p>"Antes perdíamos leads de Urbania porque tardábamos horas en responder. Con Blink respondemos en segundos y nuestra tasa de visitas agendadas se duplicó en el primer mes."</p>
-      <div class="testimonial-author">
-        <div class="author-avatar">GI</div>
-        <div><div class="author-name">Gerencia Comercial</div><div class="author-role">Global Inmobiliaria</div></div>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p>"Antes perdíamos leads de Urbania porque tardábamos horas en responder. Con Blink respondemos en segundos y nuestra tasa de visitas agendadas se duplicó en el primer mes."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">GI</div>
+          <div><div class="author-name">Gerencia Comercial</div><div class="author-role">Global Inmobiliaria</div></div>
+        </div>
       </div>
-    </div>
-    <div class="testimonial">
-      <div class="stars">★★★★★</div>
-      <p>"Lo que más nos sorprendió fue que el agente entiende audios. Los clientes mandan notas de voz preguntando por el proyecto y Blink les responde al instante con toda la info."</p>
-      <div class="testimonial-author">
-        <div class="author-avatar">DO</div>
-        <div><div class="author-name">Director de Ventas</div><div class="author-role">Dommio Inmobiliaria</div></div>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p>"Lo que más nos sorprendió fue que el agente entiende audios. Los clientes mandan notas de voz preguntando por el proyecto y Blink les responde al instante con toda la info."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">DO</div>
+          <div><div class="author-name">Director de Ventas</div><div class="author-role">Dommio Inmobiliaria</div></div>
+        </div>
       </div>
-    </div>
-    <div class="testimonial">
-      <div class="stars">★★★★★</div>
-      <p>"Conectamos Google Ads, Meta y Nexo Inmobiliario al mismo agente. Blink los centraliza todos y responde en nombre de nuestro proyecto con el mismo tono. Es como tener un asesor 24/7."</p>
-      <div class="testimonial-author">
-        <div class="author-avatar">UP</div>
-        <div><div class="author-name">Jefe de Marketing</div><div class="author-role">Urbana Pro</div></div>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p>"Conectamos Google Ads, Meta y Nexo Inmobiliario al mismo agente. Blink los centraliza todos y responde en nombre de nuestro proyecto. Es como tener un asesor 24/7."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">UP</div>
+          <div><div class="author-name">Jefe de Marketing</div><div class="author-role">Urbana Pro</div></div>
+        </div>
       </div>
-    </div>
-    <div class="testimonial">
-      <div class="stars">★★★★★</div>
-      <p>"Implementación fue en 7 días como prometieron. A la semana ya teníamos el agente corriendo y en el primer mes gestionó más de 200 leads sin que nuestro equipo moviera un dedo."</p>
-      <div class="testimonial-author">
-        <div class="author-avatar">CR</div>
-        <div><div class="author-name">CEO</div><div class="author-role">Capitalia Realty</div></div>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p>"Implementación fue en 7 días como prometieron. A la semana ya teníamos el agente corriendo y en el primer mes gestionó más de 200 leads sin que nuestro equipo moviera un dedo."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">CR</div>
+          <div><div class="author-name">CEO</div><div class="author-role">Capitalia Realty</div></div>
+        </div>
+      </div>
+      <!-- Duplicate set for seamless loop -->
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p>"Teníamos asesores que llegaban a la oficina y los leads ya estaban calificados y con visita agendada. Blink trabaja toda la noche y nosotros llegamos a cerrar, no a buscar."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">TK</div>
+          <div><div class="author-name">Equipo Comercial</div><div class="author-role">TAKLAB Group</div></div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p>"Antes perdíamos leads de Urbania porque tardábamos horas en responder. Con Blink respondemos en segundos y nuestra tasa de visitas agendadas se duplicó en el primer mes."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">GI</div>
+          <div><div class="author-name">Gerencia Comercial</div><div class="author-role">Global Inmobiliaria</div></div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p>"Lo que más nos sorprendió fue que el agente entiende audios. Los clientes mandan notas de voz preguntando por el proyecto y Blink les responde al instante con toda la info."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">DO</div>
+          <div><div class="author-name">Director de Ventas</div><div class="author-role">Dommio Inmobiliaria</div></div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p>"Conectamos Google Ads, Meta y Nexo Inmobiliario al mismo agente. Blink los centraliza todos y responde en nombre de nuestro proyecto. Es como tener un asesor 24/7."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">UP</div>
+          <div><div class="author-name">Jefe de Marketing</div><div class="author-role">Urbana Pro</div></div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p>"Implementación fue en 7 días como prometieron. A la semana ya teníamos el agente corriendo y en el primer mes gestionó más de 200 leads sin que nuestro equipo moviera un dedo."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">CR</div>
+          <div><div class="author-name">CEO</div><div class="author-role">Capitalia Realty</div></div>
+        </div>
       </div>
     </div>
   </div>
@@ -804,8 +900,8 @@
       <div class="faq-a"><p>No. Blink tiene una interfaz visual y nuestro equipo hace la implementación completa contigo en los primeros 7 días (o 10 en Edify Pro). No necesitas escribir una línea de código.</p></div>
     </div>
     <div class="faq-item">
-      <button class="faq-q" onclick="toggleFaq(this)">¿Qué pasa si supero los 300 leads del plan Edify?<span class="faq-arrow">▼</span></button>
-      <div class="faq-a"><p>Se cobra $0.10 USD por cada lead adicional sobre los 300 incluidos. Recibirás un resumen mensual con el detalle de uso para que tengas control total sobre tu inversión.</p></div>
+      <button class="faq-q" onclick="toggleFaq(this)">¿Qué pasa si supero los leads del plan?<span class="faq-arrow">▼</span></button>
+      <div class="faq-a"><p>Se cobra $0.15 USD por cada lead adicional sobre los incluidos en tu plan (400 en Edify, 600 en Edify Pro). Recibirás un resumen mensual con el detalle de uso.</p></div>
     </div>
     <div class="faq-item">
       <button class="faq-q" onclick="toggleFaq(this)">¿El agente puede sonar como mi marca?<span class="faq-arrow">▼</span></button>
@@ -1125,6 +1221,63 @@ setInterval(() => {
   draw();
 })();
 
+// ── BILLING TOGGLE ──
+function toggleBilling(sw) {
+  const isQuarterly = sw.checked;
+  document.getElementById('labelMonthly').classList.toggle('active', !isQuarterly);
+  document.getElementById('labelQuarterly').classList.toggle('active', isQuarterly);
+
+  if (isQuarterly) {
+    // Trimestral: precio con descuento
+    document.getElementById('e1-original').textContent = '$400';
+    document.getElementById('e1-amount').innerHTML = '<sup>$</sup>299';
+    document.getElementById('e1-period').textContent = 'por mes · plan trimestral';
+    document.getElementById('e1-note').textContent = '$897 total · ahorras $303 vs mensual';
+    document.getElementById('e2-original').textContent = '$600';
+    document.getElementById('e2-amount').innerHTML = '<sup>$</sup>499';
+    document.getElementById('e2-period').textContent = 'por mes · plan trimestral';
+    document.getElementById('e2-note').textContent = '$1,497 total · ahorras $303 vs mensual';
+  } else {
+    // Mensual
+    document.getElementById('e1-original').textContent = '';
+    document.getElementById('e1-amount').innerHTML = '<sup>$</sup>400';
+    document.getElementById('e1-period').textContent = 'por mes · facturación mensual';
+    document.getElementById('e1-note').textContent = 'Periodo de 30 días calendario';
+    document.getElementById('e2-original').textContent = '';
+    document.getElementById('e2-amount').innerHTML = '<sup>$</sup>600';
+    document.getElementById('e2-period').textContent = 'por mes · facturación mensual';
+    document.getElementById('e2-note').textContent = 'Periodo de 30 días calendario';
+  }
+}
+
+// ── MARQUEE PAUSE ON CLICK ──
+(function() {
+  const track = document.getElementById('marqueeTrack');
+  if (!track) return;
+  let paused = false;
+  track.parentElement.addEventListener('click', () => {
+    paused = !paused;
+    track.classList.toggle('paused', paused);
+  });
+  // Resume on mouse leave
+  track.parentElement.addEventListener('mouseleave', () => {
+    paused = false;
+    track.classList.remove('paused');
+  });
+})();
+
+// ── MOBILE PRICING DOTS ──
+(function() {
+  const wrapper = document.querySelector('.pricing-wrapper');
+  const dots = document.querySelectorAll('.pricing-dot');
+  if (!wrapper || !dots.length) return;
+  wrapper.addEventListener('scroll', () => {
+    const idx = Math.round(wrapper.scrollLeft / (wrapper.scrollWidth / 3));
+    dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+  }, { passive: true });
+})();
+
+// ── FAQ ──
 function toggleFaq(btn) {
   const item = btn.closest('.faq-item');
   const isOpen = item.classList.contains('open');
@@ -1159,55 +1312,43 @@ function clearError(el) {
 
 function submitPopup() {
   const name    = document.getElementById('pName');
-  const company = document.getElementById('pCompany');
   const phone   = document.getElementById('pPhone');
   const email   = document.getElementById('pEmail');
   const errEl   = document.getElementById('popupError');
 
   let valid = true;
-
-  [name, company, phone, email].forEach(f => { f.style.borderColor = ''; });
+  [name, phone, email].forEach(f => { f.style.borderColor = ''; });
 
   if (!name.value.trim()) { name.style.borderColor = '#ff6b6b'; valid = false; }
-  if (!company.value.trim()) { company.style.borderColor = '#ff6b6b'; valid = false; }
   if (!phone.value.trim() || phone.value.trim().length < 7) { phone.style.borderColor = '#ff6b6b'; valid = false; }
   const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRe.test(email.value.trim())) { email.style.borderColor = '#ff6b6b'; valid = false; }
 
-  if (!valid) {
-    errEl.style.display = 'block';
-    return;
-  }
+  if (!valid) { errEl.style.display = 'block'; return; }
 
   const data = {
     nombre: name.value.trim(),
-    empresa: company.value.trim(),
+    empresa: '',
     whatsapp: phone.value.trim(),
     email: email.value.trim(),
     fecha: new Date().toLocaleString('es-PE', { timeZone: 'America/Lima' })
   };
 
-  // Enviar a Google Sheets
   const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbyzu754ycA6ahe920Duo2iU8W-Aqv_T7hwunU-l-1mjGhfmtBHcUgKb-LtsqfOQDadpOQ/exec';
-
   const btn = document.querySelector('.popup-btn');
   btn.textContent = 'Enviando...';
   btn.disabled = true;
 
-  fetch(SHEETS_URL, {
-    method: 'POST',
-    mode: 'no-cors',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  })
-  .then(() => {
-    btn.textContent = '✓ ¡Listo! Te contactaremos muy pronto';
-    btn.style.background = 'linear-gradient(135deg,#00c896,#00a8d8)';
-    setTimeout(closePopup, 2200);
-  })
-  .catch(() => {
-    // Even if fetch fails silently (no-cors), data likely went through
-    btn.textContent = '✓ ¡Listo! Te contactaremos muy pronto';
+  const params = new URLSearchParams();
+  params.append('fecha',    data.fecha);
+  params.append('nombre',   data.nombre);
+  params.append('empresa',  data.empresa);
+  params.append('whatsapp', data.whatsapp);
+  params.append('email',    data.email);
+
+  fetch(SHEETS_URL, { method: 'POST', mode: 'no-cors', body: params })
+  .finally(() => {
+    btn.textContent = '✓ ¡Listo! Te contactamos pronto';
     btn.style.background = 'linear-gradient(135deg,#00c896,#00a8d8)';
     setTimeout(closePopup, 2200);
   });
