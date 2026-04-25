@@ -1339,14 +1339,14 @@ function submitPopup() {
   btn.textContent = 'Enviando...';
   btn.disabled = true;
 
-  const params = new URLSearchParams();
-  params.append('fecha',    data.fecha);
-  params.append('nombre',   data.nombre);
-  params.append('empresa',  data.empresa);
-  params.append('whatsapp', data.whatsapp);
-  params.append('email',    data.email);
+  const params = new URLSearchParams({
+    fecha:    data.fecha,
+    nombre:   data.nombre,
+    whatsapp: data.whatsapp,
+    email:    data.email
+  });
 
-  fetch(SHEETS_URL, { method: 'POST', mode: 'no-cors', body: params })
+  fetch(SHEETS_URL + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
   .finally(() => {
     btn.textContent = '✓ ¡Listo! Te contactamos pronto';
     btn.style.background = 'linear-gradient(135deg,#00c896,#00a8d8)';
