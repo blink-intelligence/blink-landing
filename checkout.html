@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checkout · Blink</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--navy:#001859;--blue:#035FFF;--teal:#6FFFE9;--white:#FFFFFF;--muted:#8896b8;--card:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.1);--error:#ff6b6b;--success:#00c896}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--navy);color:var(--white);font-family:'Outfit',sans-serif;min-height:100vh;overflow-x:hidden}
+  .blob{position:fixed;border-radius:50%;filter:blur(130px);pointer-events:none;z-index:0}
+  .blob-1{width:480px;height:480px;background:rgba(3,95,255,0.16);top:-100px;right:-80px}
+  .blob-2{width:360px;height:360px;background:rgba(111,255,233,0.07);bottom:0;left:-80px}
+  nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;backdrop-filter:blur(14px);background:rgba(0,24,89,0.75);border-bottom:1px solid rgba(111,255,233,0.07)}
+  .logo{font-family:'Outfit',sans-serif;font-size:20px;font-weight:300;color:var(--teal);text-decoration:none}
+  .back-link{font-size:13px;color:var(--muted);text-decoration:none;display:flex;align-items:center;gap:5px;transition:color .2s}
+  .back-link:hover{color:var(--white)}
+  .checkout-wrapper{position:relative;z-index:1;max-width:480px;margin:0 auto;padding:88px 20px 60px}
+
+  /* PROGRESS */
+  .progress-bar{display:flex;align-items:flex-start;margin-bottom:32px}
+  .step-item{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;position:relative}
+  .step-item::after{content:'';position:absolute;top:16px;left:50%;right:-50%;height:2px;background:rgba(255,255,255,0.1);z-index:0;transition:background .4s}
+  .step-item:last-child::after{display:none}
+  .step-item.completed::after{background:var(--teal)}
+  .step-circle{width:32px;height:32px;border-radius:50%;border:2px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--muted);position:relative;z-index:1;background:var(--navy);transition:all .35s;flex-shrink:0}
+  .step-item.active .step-circle{border-color:var(--teal);color:var(--teal);box-shadow:0 0 16px rgba(111,255,233,.3)}
+  .step-item.completed .step-circle{border-color:var(--teal);background:var(--teal);color:var(--navy);font-size:14px}
+  .step-label{font-size:10px;font-weight:500;color:var(--muted);letter-spacing:.04em;text-align:center;white-space:nowrap;transition:color .3s}
+  .step-item.active .step-label{color:var(--white)}
+  .step-item.completed .step-label{color:var(--teal)}
+
+  /* PANELS */
+  .step-panel{display:none;animation:fadeSlide .35s ease both}
+  .step-panel.active{display:block}
+  .step-panel.back{animation:fadeSlideBack .35s ease both}
+  @keyframes fadeSlide{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:translateX(0)}}
+  @keyframes fadeSlideBack{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:translateX(0)}}
+  .step-header{margin-bottom:24px}
+  .step-header h2{font-family:'Poppins',sans-serif;font-size:22px;font-weight:800;letter-spacing:-.5px;margin-bottom:4px}
+  .step-header h2 em{font-style:normal;background:linear-gradient(90deg,var(--teal),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .step-header p{font-size:13px;color:var(--muted);font-weight:300}
+
+  /* STEP 1 */
+  .plan-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:20px;margin-bottom:14px}
+  .plan-card-top{display:flex;align-items:center;justify-content:space-between}
+  .plan-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(111,255,233,0.1);border:1px solid rgba(111,255,233,0.2);color:var(--teal);font-size:11px;font-weight:600;padding:3px 10px;border-radius:100px}
+  .plan-price-top{text-align:right}
+  .plan-price-num{font-family:'Poppins',sans-serif;font-size:24px;font-weight:800;background:linear-gradient(90deg,var(--teal),#3ef5d3);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .plan-price-sub{font-size:11px;color:var(--muted)}
+  .plan-name{font-family:'Poppins',sans-serif;font-size:18px;font-weight:800;margin:12px 0 4px}
+  .plan-period-txt{font-size:12px;color:var(--muted);margin-bottom:14px}
+  .details-toggle{width:100%;background:none;border:none;color:var(--teal);font-size:12.5px;font-family:'Outfit',sans-serif;cursor:pointer;display:flex;align-items:center;gap:5px;padding:0;transition:opacity .2s}
+  .details-toggle:hover{opacity:.75}
+  .details-arrow{transition:transform .3s;font-size:10px}
+  .details-toggle.open .details-arrow{transform:rotate(180deg)}
+  .plan-features-list{max-height:0;overflow:hidden;transition:max-height .4s ease,margin .3s;margin-top:0}
+  .plan-features-list.open{max-height:500px;margin-top:12px}
+  .plan-features-list ul{list-style:none;display:flex;flex-direction:column;gap:8px}
+  .plan-features-list li{font-size:13px;color:#c8d0e8;display:flex;gap:7px;align-items:flex-start}
+  .plan-features-list li::before{content:'✓';color:var(--teal);font-weight:700;flex-shrink:0;margin-top:1px}
+  .impl-pill{display:inline-flex;align-items:center;gap:5px;background:rgba(111,255,233,0.06);border:1px solid rgba(111,255,233,0.15);border-radius:10px;padding:8px 12px;font-size:12px;color:var(--teal);margin-top:12px;width:100%}
+  .price-breakdown-card{background:rgba(3,95,255,0.08);border:1px solid rgba(3,95,255,0.2);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:8px}
+  .pb-row{display:flex;justify-content:space-between;align-items:center;font-size:13px}
+  .pb-row .lbl{color:var(--muted)}
+  .pb-row .val{font-weight:500}
+  .pb-divider{border:none;border-top:1px solid rgba(255,255,255,0.07)}
+  .pb-row.total{font-size:16px}
+  .pb-row.total .lbl{color:var(--white);font-weight:500}
+  .pb-row.total .val{font-family:'Poppins',sans-serif;font-weight:800;background:linear-gradient(90deg,var(--teal),#3ef5d3);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .original-price{text-decoration:line-through;color:var(--muted);font-size:11px;margin-right:4px}
+
+  /* STEP 2 */
+  .field-group{display:flex;flex-direction:column;gap:14px}
+  .field{display:flex;flex-direction:column;gap:5px}
+  .field label{font-size:12px;color:var(--muted);font-weight:500;letter-spacing:.04em}
+  input,select{background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:12px;padding:14px 16px;font-size:15px;color:var(--white);font-family:'Outfit',sans-serif;outline:none;width:100%;transition:border-color .2s,background .2s;-webkit-appearance:none;appearance:none}
+  input::placeholder{color:rgba(255,255,255,0.2)}
+  input:focus,select:focus{border-color:rgba(111,255,233,.5);background:rgba(255,255,255,0.07)}
+  input.err{border-color:var(--error)!important}
+  select option{background:#0a1530}
+  .phone-row{display:flex;gap:8px}
+  .phone-code-sel{width:120px;flex-shrink:0}
+  .phone-num{flex:1}
+  .field-err{font-size:11.5px;color:var(--error);display:none;margin-top:-4px;line-height:1.4}
+  .field-err.show{display:block}
+
+  /* STEP 3 */
+  .mini-summary{background:rgba(111,255,233,0.05);border:1px solid rgba(111,255,233,0.12);border-radius:12px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+  .mini-plan{font-size:13px;font-weight:500}
+  .mini-price{font-family:'Poppins',sans-serif;font-size:16px;font-weight:800;color:var(--teal)}
+  .secure-header{display:flex;align-items:center;justify-content:center;gap:8px;font-size:12px;color:var(--muted);margin-bottom:20px}
+
+  .payment-info-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;text-align:center}
+  .payment-info-box .pay-icon{font-size:40px;margin-bottom:12px}
+  .payment-info-box h3{font-family:'Poppins',sans-serif;font-size:16px;font-weight:700;margin-bottom:6px}
+  .payment-info-box p{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:16px}
+  .payment-redirect-note{background:rgba(111,255,233,0.06);border:1px solid rgba(111,255,233,0.15);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--teal);line-height:1.5;margin-bottom:20px}
+
+  /* HIDDEN FORM */
+  #izipayHiddenForm{display:none}
+
+  /* BUTTONS */
+  .btn-primary{width:100%;padding:16px;background:var(--teal);color:var(--navy);border:none;border-radius:100px;font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 0 32px rgba(111,255,233,.25);margin-top:8px;display:flex;align-items:center;justify-content:center;gap:6px}
+  .btn-primary:hover{box-shadow:0 0 50px rgba(111,255,233,.4);transform:translateY(-1px)}
+  .btn-primary:disabled{opacity:.55;cursor:not-allowed;transform:none}
+  .btn-back{width:100%;padding:14px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:100px;font-family:'Outfit',sans-serif;font-size:14px;cursor:pointer;transition:all .2s;margin-top:10px}
+  .btn-back:hover{border-color:rgba(255,255,255,.3);color:var(--white)}
+
+  /* THANK YOU */
+  #thanks-page{display:none;position:fixed;inset:0;z-index:200;background:var(--navy);flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 24px;overflow-y:auto}
+  #thanks-page.show{display:flex}
+  .confetti-wrap{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:201}
+  .confetti-dot{position:absolute;animation:confettiFall linear infinite}
+  @keyframes confettiFall{0%{transform:translateY(-10px) rotate(0);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
+  .thanks-check{width:76px;height:76px;background:rgba(0,200,150,0.12);border:2px solid var(--success);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:34px;margin:0 auto 20px;animation:popIn .5s .2s cubic-bezier(.175,.885,.32,1.275) both;position:relative;z-index:202}
+  @keyframes popIn{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+  .thanks-title{font-family:'Poppins',sans-serif;font-size:26px;font-weight:800;margin-bottom:8px;animation:fadeUp .5s .4s ease both;position:relative;z-index:202}
+  .thanks-title em{font-style:normal;background:linear-gradient(90deg,var(--teal),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .thanks-sub{font-size:14px;color:var(--muted);max-width:300px;line-height:1.65;margin-bottom:28px;animation:fadeUp .5s .5s ease both;position:relative;z-index:202}
+  .thanks-steps{display:flex;flex-direction:column;gap:10px;width:100%;max-width:340px;margin-bottom:32px;animation:fadeUp .5s .6s ease both;position:relative;z-index:202}
+  .thanks-step{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;text-align:left}
+  .thanks-step-icon{width:36px;height:36px;border-radius:10px;background:rgba(111,255,233,0.1);border:1px solid rgba(111,255,233,0.2);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+  .thanks-step-text strong{font-size:13px;display:block;margin-bottom:2px}
+  .thanks-step-text span{font-size:12px;color:var(--muted)}
+  .btn-thanks{background:var(--teal);color:var(--navy);border:none;border-radius:100px;padding:14px 40px;font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;cursor:pointer;animation:fadeUp .5s .7s ease both;box-shadow:0 0 30px rgba(111,255,233,.3);position:relative;z-index:202}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+  /* Processing overlay */
+  .processing-overlay{display:none;position:fixed;inset:0;z-index:300;background:rgba(0,24,89,0.95);backdrop-filter:blur(10px);flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px}
+  .processing-overlay.show{display:flex}
+  .processing-spin{width:48px;height:48px;border:3px solid rgba(111,255,233,0.2);border-top-color:var(--teal);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 20px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .processing-overlay p{font-size:15px;color:var(--muted)}
+  .processing-overlay strong{font-size:18px;color:var(--white);display:block;margin-bottom:8px}
+</style>
+</head>
+<body>
+
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+
+<!-- PROCESSING OVERLAY -->
+<div class="processing-overlay" id="processingOverlay">
+  <div class="processing-spin"></div>
+  <strong>Redirigiendo al pago seguro...</strong>
+  <p>Serás redirigido a la página de Izipay en un momento</p>
+</div>
+
+<!-- THANK YOU PAGE (shown when returning from Izipay with ?status=paid) -->
+<div id="thanks-page">
+  <div class="confetti-wrap" id="confettiWrap"></div>
+  <div class="thanks-check">✓</div>
+  <h2 class="thanks-title">¡Bienvenido a <em>Blink</em>!</h2>
+  <p class="thanks-sub">Tu pago fue confirmado. Estás a punto de automatizar tus ventas.</p>
+  <div class="thanks-steps">
+    <div class="thanks-step">
+      <div class="thanks-step-icon">📧</div>
+      <div class="thanks-step-text">
+        <strong>Revisa tu correo</strong>
+        <span>Recibirás la confirmación en minutos</span>
+      </div>
+    </div>
+    <div class="thanks-step">
+      <div class="thanks-step-icon">📞</div>
+      <div class="thanks-step-text">
+        <strong>Te contactamos en 24 hrs</strong>
+        <span>Nuestro equipo coordinará tu implementación</span>
+      </div>
+    </div>
+    <div class="thanks-step">
+      <div class="thanks-step-icon">🚀</div>
+      <div class="thanks-step-text">
+        <strong>Implementación incluida</strong>
+        <span id="thanks-impl-txt">7 días para dejarlo todo listo</span>
+      </div>
+    </div>
+  </div>
+  <button class="btn-thanks" onclick="window.location.href='index.html'">Volver al inicio →</button>
+</div>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="logo">blink</a>
+  <a href="index.html" class="back-link">← Planes</a>
+</nav>
+
+<div class="checkout-wrapper">
+
+  <!-- PROGRESS -->
+  <div class="progress-bar">
+    <div class="step-item active" id="si-1"><div class="step-circle" id="sc-1">1</div><span class="step-label">Pedido</span></div>
+    <div class="step-item" id="si-2"><div class="step-circle" id="sc-2">2</div><span class="step-label">Tus datos</span></div>
+    <div class="step-item" id="si-3"><div class="step-circle" id="sc-3">3</div><span class="step-label">Pago</span></div>
+  </div>
+
+  <!-- STEP 1 -->
+  <div class="step-panel active" id="step-1">
+    <div class="step-header">
+      <h2>Resumen de tu <em>pedido</em></h2>
+      <p>Revisa los detalles antes de continuar.</p>
+    </div>
+    <div class="plan-card">
+      <div class="plan-card-top">
+        <span class="plan-badge" id="s1-badge">✦ Edify</span>
+        <div class="plan-price-top">
+          <div class="plan-price-num" id="s1-price">$400</div>
+          <div class="plan-price-sub" id="s1-period-short">/ mes</div>
+        </div>
+      </div>
+      <p class="plan-name" id="s1-name">Edify</p>
+      <p class="plan-period-txt" id="s1-period">Suscripción mensual · 30 días calendario</p>
+      <button class="details-toggle" id="detailsToggle" onclick="toggleDetails()">
+        Ver qué incluye <span class="details-arrow">▾</span>
+      </button>
+      <div class="plan-features-list" id="featuresList"><ul id="featureItems"></ul></div>
+      <div class="impl-pill" id="s1-impl">🚀 +7 días de implementación incluidos</div>
+    </div>
+    <div class="price-breakdown-card">
+      <div class="pb-row"><span class="lbl">Plan</span><span class="val" id="pb-sub">$400 USD</span></div>
+      <div class="pb-row"><span class="lbl">Implementación</span><span class="val" style="color:var(--teal)">Incluida</span></div>
+      <div class="pb-divider"></div>
+      <div class="pb-row total"><span class="lbl">Total hoy</span><span class="val"><span class="original-price" id="pb-original"></span><span id="pb-total">$400 USD</span></span></div>
+    </div>
+    <button class="btn-primary" onclick="goTo(2)">Continuar →</button>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step-panel" id="step-2">
+    <div class="step-header">
+      <h2>Tus <em>datos</em></h2>
+      <p>Para enviarte la confirmación y coordinar tu implementación.</p>
+    </div>
+    <div class="field-group">
+      <div class="field">
+        <label>Nombre completo</label>
+        <input type="text" id="f-name" placeholder="Jorge Gonzales">
+        <span class="field-err" id="err-name">Ingresa tu nombre completo</span>
+      </div>
+      <div class="field">
+        <label>Correo electrónico</label>
+        <input type="email" id="f-email" placeholder="jorge@gmail.com" oninput="clearErr('email')">
+        <span class="field-err" id="err-email">Ingresa un correo válido (ej. nombre@gmail.com)</span>
+      </div>
+      <div class="field">
+        <label>Empresa <span style="font-weight:300;color:var(--muted)">(opcional)</span></label>
+        <input type="text" id="f-company" placeholder="Mi Empresa SAC">
+      </div>
+      <div class="field">
+        <label>WhatsApp</label>
+        <div class="phone-row">
+          <select class="phone-code-sel" id="f-country" onchange="clearErr('phone')">
+            <option value="+51" data-digits="9">🇵🇪 +51</option>
+            <option value="+1" data-digits="10">🇺🇸 +1</option>
+            <option value="+52" data-digits="10">🇲🇽 +52</option>
+            <option value="+57" data-digits="10">🇨🇴 +57</option>
+            <option value="+54" data-digits="10">🇦🇷 +54</option>
+            <option value="+56" data-digits="9">🇨🇱 +56</option>
+            <option value="+593" data-digits="9">🇪🇨 +593</option>
+            <option value="+591" data-digits="8">🇧🇴 +591</option>
+            <option value="+58" data-digits="10">🇻🇪 +58</option>
+            <option value="+34" data-digits="9">🇪🇸 +34</option>
+            <option value="+55" data-digits="11">🇧🇷 +55</option>
+          </select>
+          <input type="tel" class="phone-num" id="f-phone" placeholder="987 654 321" oninput="clearErr('phone')">
+        </div>
+        <span class="field-err" id="err-phone">Ingresa un número válido</span>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="handleStep2()">Continuar al pago →</button>
+    <button class="btn-back" onclick="goTo(1, true)">← Volver</button>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="step-panel" id="step-3">
+    <div class="step-header">
+      <h2>Pago <em>seguro</em></h2>
+      <p>Serás redirigido a la pasarela de Izipay para completar el pago.</p>
+    </div>
+    <div class="mini-summary">
+      <span class="mini-plan" id="mini-plan">Edify Mensual</span>
+      <span class="mini-price" id="mini-price">$400 USD</span>
+    </div>
+    <div class="secure-header">🔒 Pago certificado por Izipay · 256-bit SSL</div>
+    <div class="payment-info-box">
+      <div class="pay-icon">🏦</div>
+      <h3>Pago procesado por Izipay</h3>
+      <p>Al hacer clic serás redirigido a la pasarela de pago segura de Izipay donde podrás ingresar los datos de tu tarjeta de crédito o débito.</p>
+    </div>
+    <div class="payment-redirect-note" style="margin-top:14px;">
+      ✓ Tus datos de tarjeta nunca pasan por nuestros servidores — son procesados directamente por Izipay con certificación PCI DSS.
+    </div>
+    <button class="btn-primary" id="payNowBtn" onclick="submitToIzipay()">
+      🔒 Pagar ahora →
+    </button>
+    <button class="btn-back" onclick="goTo(2, true)">← Volver</button>
+  </div>
+
+</div>
+
+<!-- Hidden Izipay form (submitted programmatically) -->
+<form id="izipayHiddenForm" method="POST" action="https://secure.micuentaweb.pe/vads-payment/">
+</form>
+
+<script>
+// ── PLAN CONFIG ──
+const PLANS = {
+  'edify-monthly':   {name:'Edify',badge:'✦ Edify',periodShort:'/ mes',period:'Suscripción mensual · 30 días calendario',price:400,original:'',label:'Edify Mensual',impl:7,features:['1 asesor comercial IA','1 número WhatsApp Business','400 leads / mes (adicionales $0.15 c/u)','Calificación de leads con IA','Integración con 1 fuente de datos','Agendamiento automático','Dashboard de métricas']},
+  'edify-quarterly': {name:'Edify',badge:'✦ Edify Trimestral',periodShort:'total',period:'Plan trimestral · 3 meses · 1 mes gratis incluido',price:897,original:'$1,200',label:'Edify Trimestral',impl:7,features:['1 asesor comercial IA','1 número WhatsApp Business','400 leads / mes (adicionales $0.15 c/u)','Calificación de leads con IA','Integración con 1 fuente de datos','Agendamiento automático','Dashboard de métricas','🎁 1 mes gratis incluido']},
+  'pro-monthly':     {name:'Edify Pro',badge:'✦ Edify Pro',periodShort:'/ mes',period:'Suscripción mensual · 30 días calendario',price:600,original:'',label:'Edify Pro Mensual',impl:10,features:['Todo lo de Edify','Hasta 3 WhatsApp Business','600 leads / mes (adicionales $0.15 c/u)','Fuentes de datos ilimitadas','Vinculación con CRM','Calificación IA avanzada','Agendamiento multi-asesor','Seguimiento y reactivación automática','Dashboard avanzado + exportación']},
+  'pro-quarterly':   {name:'Edify Pro',badge:'✦ Edify Pro Trimestral',periodShort:'total',period:'Plan trimestral · 3 meses · 1 mes gratis incluido',price:1497,original:'$1,800',label:'Edify Pro Trimestral',impl:10,features:['Todo lo de Edify','Hasta 3 WhatsApp Business','600 leads / mes (adicionales $0.15 c/u)','Fuentes de datos ilimitadas','Vinculación con CRM','Calificación IA avanzada','Agendamiento multi-asesor','Seguimiento y reactivación automática','Dashboard avanzado + exportación','🎁 1 mes gratis incluido']}
+};
+
+const urlParams = new URLSearchParams(window.location.search);
+const plan = PLANS[urlParams.get('plan')] || PLANS['edify-monthly'];
+
+// Show thank you if returning from Izipay with success
+if (urlParams.get('status') === 'paid') {
+  document.getElementById('thanks-page').classList.add('show');
+  document.getElementById('thanks-impl-txt').textContent = plan.impl + ' días para dejarlo todo listo';
+  generateConfetti();
+}
+
+// Populate UI
+document.getElementById('s1-badge').textContent = plan.badge;
+document.getElementById('s1-name').textContent = plan.name;
+document.getElementById('s1-price').textContent = '$' + plan.price.toLocaleString();
+document.getElementById('s1-period-short').textContent = plan.periodShort;
+document.getElementById('s1-period').textContent = plan.period;
+document.getElementById('s1-impl').textContent = '🚀 +' + plan.impl + ' días de implementación incluidos';
+document.getElementById('pb-sub').textContent = '$' + plan.price.toLocaleString() + ' USD';
+document.getElementById('pb-total').textContent = '$' + plan.price.toLocaleString() + ' USD';
+document.getElementById('pb-original').textContent = plan.original;
+document.getElementById('featureItems').innerHTML = plan.features.map(f => '<li>' + f + '</li>').join('');
+document.getElementById('mini-plan').textContent = plan.label;
+document.getElementById('mini-price').textContent = '$' + plan.price.toLocaleString() + ' USD';
+document.getElementById('thanks-impl-txt').textContent = plan.impl + ' días para dejarlo todo listo';
+
+// ── NAVIGATION ──
+let currentStep = 1;
+
+function updateProgress(step) {
+  [1,2,3].forEach(i => {
+    const si = document.getElementById('si-' + i);
+    const sc = document.getElementById('sc-' + i);
+    si.classList.remove('active','completed');
+    if (i < step) { si.classList.add('completed'); sc.textContent = '✓'; }
+    else { sc.textContent = i; if (i === step) si.classList.add('active'); }
+  });
+}
+
+function goTo(step, back) {
+  document.getElementById('step-' + currentStep).classList.remove('active');
+  const next = document.getElementById('step-' + step);
+  next.classList.remove('back');
+  if (back) next.classList.add('back');
+  next.classList.add('active');
+  currentStep = step;
+  updateProgress(step);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function toggleDetails() {
+  const list = document.getElementById('featuresList');
+  const btn  = document.getElementById('detailsToggle');
+  list.classList.toggle('open');
+  btn.classList.toggle('open');
+  btn.childNodes[0].textContent = list.classList.contains('open') ? 'Ocultar detalles ' : 'Ver qué incluye ';
+}
+
+// ── VALIDATION ──
+function clearErr(id) {
+  const input = id === 'phone' ? document.getElementById('f-phone') : document.getElementById('f-' + id);
+  input.classList.remove('err');
+  document.getElementById('err-' + id).classList.remove('show');
+}
+
+function validateEmail(email) {
+  // Must have proper format: something@domain.tld (tld at least 2 chars)
+  const re = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
+  if (!re.test(email)) return false;
+  // Must have a real domain (at least one dot in domain part)
+  const domain = email.split('@')[1];
+  if (!domain || !domain.includes('.')) return false;
+  // Block obviously fake domains
+  const fakeDomains = ['test.com','example.com','email.com','mail.com','fake.com','asd.com','qwe.com','abc.com','xxx.com'];
+  if (fakeDomains.includes(domain.toLowerCase())) return false;
+  return true;
+}
+
+function validatePhone(phone, countryCode) {
+  const digits = phone.replace(/\D/g, '');
+  const sel = document.getElementById('f-country');
+  const selectedOption = sel.options[sel.selectedIndex];
+  const requiredDigits = parseInt(selectedOption.dataset.digits) || 9;
+
+  if (countryCode === '+51') {
+    // Peru: 9 digits, must start with 9 (mobile) or have 9 digits total
+    return digits.length === 9;
+  }
+  // Other countries: check by their required digits
+  return digits.length >= requiredDigits - 1 && digits.length <= requiredDigits + 1;
+}
+
+// ── STEP 2 ──
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbyzu754ycA6ahe920Duo2iU8W-Aqv_T7hwunU-l-1mjGhfmtBHcUgKb-LtsqfOQDadpOQ/exec';
+
+async function handleStep2() {
+  const name    = document.getElementById('f-name');
+  const email   = document.getElementById('f-email');
+  const phone   = document.getElementById('f-phone');
+  const country = document.getElementById('f-country');
+  let valid = true;
+
+  [name, email, phone].forEach(f => f.classList.remove('err'));
+  ['name','email','phone'].forEach(id => document.getElementById('err-' + id).classList.remove('show'));
+
+  if (!name.value.trim() || name.value.trim().split(' ').length < 2) {
+    name.classList.add('err');
+    document.getElementById('err-name').textContent = 'Ingresa tu nombre y apellido';
+    document.getElementById('err-name').classList.add('show');
+    valid = false;
+  }
+
+  if (!validateEmail(email.value.trim())) {
+    email.classList.add('err');
+    document.getElementById('err-email').classList.add('show');
+    valid = false;
+  }
+
+  const countryCode = country.value;
+  if (!validatePhone(phone.value, countryCode)) {
+    phone.classList.add('err');
+    const digits = countryCode === '+51' ? '9 dígitos' : 'número válido';
+    document.getElementById('err-phone').textContent = countryCode === '+51'
+      ? 'El número de Perú debe tener exactamente 9 dígitos'
+      : 'Ingresa un número de WhatsApp válido';
+    document.getElementById('err-phone').classList.add('show');
+    valid = false;
+  }
+
+  if (!valid) return;
+
+  // Save to Google Sheets
+  const fullPhone = countryCode + ' ' + phone.value.trim();
+  const p = new URLSearchParams({
+    fecha:    new Date().toLocaleString('es-PE', {timeZone:'America/Lima'}),
+    nombre:   name.value.trim(),
+    empresa:  document.getElementById('f-company').value.trim(),
+    whatsapp: fullPhone,
+    email:    email.value.trim(),
+    plan:     plan.label
+  });
+  try { await fetch(SHEETS_URL + '?' + p.toString(), {method:'GET',mode:'no-cors'}); } catch(e) {}
+
+  goTo(3);
+}
+
+// ── IZIPAY PAYMENT (Form POST redirect) ──
+const SHOP_ID   = '61366189';
+const SHOP_KEY  = 'taGWGNQ4TyZhh4rx'; // production key
+
+function padLeft(str, length, char) {
+  str = String(str);
+  while (str.length < length) str = char + str;
+  return str;
+}
+
+function getTransDate() {
+  const now = new Date();
+  return now.getUTCFullYear()
+    + padLeft(now.getUTCMonth()+1, 2, '0')
+    + padLeft(now.getUTCDate(), 2, '0')
+    + padLeft(now.getUTCHours(), 2, '0')
+    + padLeft(now.getUTCMinutes(), 2, '0')
+    + padLeft(now.getUTCSeconds(), 2, '0');
+}
+
+function getTransId() {
+  // 6-char alphanumeric unique ID based on time
+  return padLeft(Math.floor(Date.now() / 1000) % 900000 + 100000, 6, '0');
+}
+
+async function computeHmacSha256(message, key) {
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode(key);
+  const msgData = encoder.encode(message);
+  const cryptoKey = await crypto.subtle.importKey('raw', keyData, {name:'HMAC', hash:'SHA-256'}, false, ['sign']);
+  const signature = await crypto.subtle.sign('HMAC', cryptoKey, msgData);
+  return Array.from(new Uint8Array(signature)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+async function submitToIzipay() {
+  const btn = document.getElementById('payNowBtn');
+  btn.disabled = true;
+  document.getElementById('processingOverlay').classList.add('show');
+
+  const returnUrl = window.location.origin + window.location.pathname + '?plan=' + (urlParams.get('plan') || 'edify-monthly') + '&status=paid';
+  const cancelUrl = window.location.href;
+
+  const fields = {
+    vads_action_mode:     'INTERACTIVE',
+    vads_amount:          String(plan.price * 100),
+    vads_ctx_mode:        'PRODUCTION',
+    vads_currency:        '840', // USD
+    vads_page_action:     'PAYMENT',
+    vads_payment_config:  'SINGLE',
+    vads_site_id:         SHOP_ID,
+    vads_trans_date:      getTransDate(),
+    vads_trans_id:        getTransId(),
+    vads_version:         'V2',
+    vads_url_return:      returnUrl,
+    vads_url_cancel:      cancelUrl,
+    vads_url_success:     returnUrl,
+    vads_order_id:        'BLINK-' + Date.now(),
+    vads_cust_email:      document.getElementById('f-email').value.trim(),
+    vads_cust_first_name: document.getElementById('f-name').value.trim().split(' ')[0],
+    vads_cust_last_name:  document.getElementById('f-name').value.trim().split(' ').slice(1).join(' ') || '-',
+    vads_cust_phone:      document.getElementById('f-country').value + document.getElementById('f-phone').value.trim()
+  };
+
+  // Build signature string: sort vads_ fields alphabetically, join values with +, append key
+  const sortedKeys = Object.keys(fields).filter(k => k.startsWith('vads_')).sort();
+  const signatureContent = sortedKeys.map(k => fields[k]).join('+') + '+' + SHOP_KEY;
+  const signature = await computeHmacSha256(signatureContent, SHOP_KEY);
+
+  // Build and submit hidden form
+  const form = document.getElementById('izipayHiddenForm');
+  form.innerHTML = '';
+  [...sortedKeys, ...Object.keys(fields).filter(k => !k.startsWith('vads_'))].forEach(k => {
+    if (fields[k] !== undefined) {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = k;
+      input.value = fields[k];
+      form.appendChild(input);
+    }
+  });
+  const sigInput = document.createElement('input');
+  sigInput.type = 'hidden';
+  sigInput.name = 'signature';
+  sigInput.value = signature;
+  form.appendChild(sigInput);
+
+  form.submit();
+}
+
+// ── CONFETTI ──
+function generateConfetti() {
+  const colors = ['#6FFFE9','#035FFF','#ffffff','#3ef5d3','#7ec8ff'];
+  const wrap = document.getElementById('confettiWrap');
+  for (let i = 0; i < 60; i++) {
+    const d = document.createElement('div');
+    d.className = 'confetti-dot';
+    const size = 4 + Math.random() * 7;
+    d.style.cssText = 'left:'+Math.random()*100+'%;top:'+(-Math.random()*20)+'px;background:'+colors[Math.floor(Math.random()*colors.length)]+';animation-duration:'+(2.5+Math.random()*3)+'s;animation-delay:'+(Math.random()*2)+'s;width:'+size+'px;height:'+size+'px;border-radius:'+(Math.random()>.5?'50%':'2px');
+    wrap.appendChild(d);
+  }
+}
+</script>
+</body>
+</html>

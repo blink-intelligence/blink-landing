@@ -754,7 +754,7 @@
           <li>Agendamiento automático</li>
           <li>Dashboard de métricas</li>
         </ul>
-        <a href="https://wa.me/51912345678?text=Hola,%20quiero%20el%20plan%20Edify%20de%20Blink" target="_blank" class="btn-price btn-price-outline">Empezar con Edify</a>
+        <a href="checkout.html?plan=edify-monthly" id="e1-btn" class="btn-price btn-price-outline">Empezar con Edify</a>
         <p class="price-note" id="e1-note">Periodo de 30 días calendario</p>
       </div>
 
@@ -781,7 +781,7 @@
           <li>Seguimiento y reactivación automática</li>
           <li>Dashboard avanzado + exportación</li>
         </ul>
-        <a href="https://wa.me/51912345678?text=Hola,%20quiero%20el%20plan%20Edify%20Pro%20de%20Blink" target="_blank" class="btn-price btn-price-teal">Empezar con Edify Pro</a>
+        <a href="checkout.html?plan=pro-monthly" id="e2-btn" class="btn-price btn-price-teal">Empezar con Edify Pro</a>
         <p class="price-note" id="e2-note">Periodo de 30 días calendario</p>
       </div>
 
@@ -1266,6 +1266,10 @@ function toggleBilling(sw) {
     document.getElementById('e2-amount').innerHTML = '<sup>$</sup>499';
     document.getElementById('e2-period').textContent = 'por mes · plan trimestral';
     document.getElementById('e2-note').textContent = '$1,497 total · ahorras $303 vs mensual';
+    document.getElementById('e1-btn').href = 'checkout.html?plan=edify-quarterly';
+    document.getElementById('e2-btn').href = 'checkout.html?plan=pro-quarterly';
+    document.getElementById('e1-btn').href = 'checkout.html?plan=edify-quarterly';
+    document.getElementById('e2-btn').href = 'checkout.html?plan=pro-quarterly';
   } else {
     // Mensual
     document.getElementById('e1-original').textContent = '';
@@ -1276,6 +1280,8 @@ function toggleBilling(sw) {
     document.getElementById('e2-amount').innerHTML = '<sup>$</sup>600';
     document.getElementById('e2-period').textContent = 'por mes · facturación mensual';
     document.getElementById('e2-note').textContent = 'Periodo de 30 días calendario';
+    document.getElementById('e1-btn').href = 'checkout.html?plan=edify-monthly';
+    document.getElementById('e2-btn').href = 'checkout.html?plan=pro-monthly';
   }
 }
 
