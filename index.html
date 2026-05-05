@@ -475,8 +475,527 @@
     .pricing-dot.active { background: var(--teal); transform: scale(1.3); }
     .billing-toggle { flex-wrap: wrap; gap: 10px; }
   }
-  @media (min-width: 901px) {
-    .pricing-dots { display: none; }
+  /* ═══════════════════════════════ ANIMATED FLOW ═══════════════════════════════ */
+  .flow-wrapper { max-width: 720px; margin: 0 auto; }
+
+  /* PROGRESS RAIL */
+  .progress-rail {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    margin: 0 auto 40px;
+    position: relative;
+    padding: 0;
+  }
+  .progress-rail::before {
+    content: '';
+    position: absolute;
+    top: 18px; left: 12.5%; right: 12.5%;
+    height: 2px;
+    background: rgba(255,255,255,0.08);
+    z-index: 0;
+  }
+  .progress-rail::after {
+    content: '';
+    position: absolute;
+    top: 18px; left: 12.5%;
+    height: 2px;
+    background: linear-gradient(90deg, var(--teal), var(--blue));
+    z-index: 1;
+    width: 0;
+    transition: width 0.6s cubic-bezier(.4,0,.2,1);
+    box-shadow: 0 0 12px rgba(111,255,233,0.5);
+  }
+  .progress-rail[data-step="1"]::after { width: 0; }
+  .progress-rail[data-step="2"]::after { width: 25%; }
+  .progress-rail[data-step="3"]::after { width: 50%; }
+  .progress-rail[data-step="4"]::after { width: 75%; }
+
+  .step-pill {
+    position: relative; z-index: 2;
+    background: none; border: none; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    padding: 0;
+    -webkit-tap-highlight-color: rgba(111,255,233,0.2);
+    touch-action: manipulation;
+    pointer-events: auto;
+  }
+  .step-circle {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: var(--navy);
+    border: 2px solid rgba(255,255,255,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+    color: var(--text-muted);
+    font-family: 'Poppins', sans-serif;
+    transition: all 0.4s cubic-bezier(.4,0,.2,1);
+    pointer-events: none;
+  }
+  .step-pill.active .step-circle {
+    border-color: var(--teal);
+    color: var(--teal);
+    background: rgba(111,255,233,0.08);
+    box-shadow: 0 0 0 6px rgba(111,255,233,0.12), 0 0 20px rgba(111,255,233,0.4);
+    transform: scale(1.08);
+  }
+  .step-pill.completed .step-circle {
+    background: var(--teal);
+    border-color: var(--teal);
+    color: var(--navy);
+  }
+  .step-pill.completed .step-circle::before {
+    content: '✓';
+    font-size: 16px; font-weight: 900;
+  }
+  .step-pill.completed .step-circle .step-num-text { display: none; }
+  .step-pill-label {
+    font-size: 11px; font-weight: 500;
+    color: var(--text-muted); letter-spacing: 0.02em;
+    text-align: center; line-height: 1.3;
+    transition: color 0.3s;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+  .step-pill.active .step-pill-label { color: var(--white); font-weight: 600; }
+  .step-pill.completed .step-pill-label { color: var(--teal); }
+
+  /* STAGE */
+  .flow-stage {
+    position: relative;
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 24px;
+    padding: 40px;
+    min-height: 420px;
+    overflow: hidden;
+  }
+  .flow-stage::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(111,255,233,0.06), transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(3,95,255,0.08), transparent 50%);
+    pointer-events: none;
+  }
+  .stage-content {
+    position: relative; z-index: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    align-items: center;
+    height: 100%;
+    min-height: 340px;
+  }
+  .stage-text { display: none; flex-direction: column; gap: 14px; }
+  .stage-text.active {
+    display: flex;
+    animation: stageTextIn 0.6s cubic-bezier(.4,0,.2,1);
+  }
+  @keyframes stageTextIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .stage-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(111,255,233,0.08);
+    border: 1px solid rgba(111,255,233,0.2);
+    color: var(--teal);
+    font-size: 11px; font-weight: 600; letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 5px 12px; border-radius: 100px;
+    width: fit-content;
+  }
+  .stage-text h3 {
+    font-family: 'Poppins', sans-serif;
+    font-size: clamp(22px, 3vw, 28px);
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.5px;
+  }
+  .stage-text p {
+    font-size: 14.5px;
+    color: var(--text-muted);
+    line-height: 1.65;
+    font-weight: 300;
+  }
+  .stage-bullets { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-top: 4px; padding: 0; }
+  .stage-bullets li {
+    font-size: 13px; color: #c8d0e8;
+    display: flex; gap: 8px; align-items: flex-start;
+    line-height: 1.5;
+  }
+  .stage-bullets li::before {
+    content: '✓';
+    color: var(--teal); font-weight: 700;
+    flex-shrink: 0; margin-top: 1px;
+  }
+
+  .stage-visual { display: none; position: relative; height: 320px; align-items: center; justify-content: center; }
+  .stage-visual.active {
+    display: flex;
+    animation: stageTextIn 0.6s cubic-bezier(.4,0,.2,1) 0.1s both;
+  }
+
+  /* VISUAL 1: SOURCES */
+  .v-sources {
+    width: 100%; height: 100%;
+    max-width: 380px;
+    aspect-ratio: 400 / 320;
+    margin: 0 auto;
+    position: relative;
+  }
+  .v-sources svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .v-sources svg .conn-line {
+    stroke: var(--teal); stroke-width: 1.5; fill: none;
+    stroke-dasharray: 4 6; opacity: 0.4;
+    animation: dashFlow 1.2s linear infinite;
+  }
+  @keyframes dashFlow { to { stroke-dashoffset: -20; } }
+  .v-sources .hub-circle {
+    fill: url(#hubGrad);
+    filter: drop-shadow(0 0 20px rgba(111,255,233,0.5));
+    animation: hubPulse 2s ease-in-out infinite;
+    transform-origin: 200px 160px;
+  }
+  @keyframes hubPulse {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.05); }
+  }
+  .source-node {
+    position: absolute;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px;
+    padding: 6px 10px;
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 500;
+    backdrop-filter: blur(8px);
+    z-index: 2;
+    white-space: nowrap;
+    opacity: 0;
+    animation: sourceNodeIn 0.5s ease forwards;
+    transform: translate(-50%, -50%);
+  }
+  .source-node[data-pos="tl"] { top: 18%; left: 18%; animation-delay: 0.2s; }
+  .source-node[data-pos="tr"] { top: 18%; left: 82%; animation-delay: 0.4s; }
+  .source-node[data-pos="bl"] { top: 82%; left: 18%; animation-delay: 0.6s; }
+  .source-node[data-pos="br"] { top: 82%; left: 82%; animation-delay: 0.8s; }
+  @keyframes sourceNodeIn {
+    from { opacity: 0; transform: translate(-50%, calc(-50% + 8px)); }
+    to   { opacity: 1; transform: translate(-50%, -50%); }
+  }
+  .source-node-icon { font-size: 13px; }
+
+  /* VISUAL 2: WHATSAPP */
+  .v-whatsapp { width: 100%; height: 100%; position: relative; display: flex; align-items: center; justify-content: center; }
+  .wa-phone {
+    width: 200px; height: 280px;
+    background: linear-gradient(180deg, #0a1530, #050d22);
+    border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 24px;
+    padding: 12px 10px;
+    position: relative;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+    z-index: 2;
+  }
+  .wa-notch {
+    width: 60px; height: 14px;
+    background: #000;
+    border-radius: 0 0 10px 10px;
+    margin: -12px auto 8px;
+  }
+  .wa-screen {
+    background: rgba(255,255,255,0.03);
+    border-radius: 12px;
+    height: calc(100% - 22px);
+    padding: 14px 10px;
+    display: flex; flex-direction: column; gap: 10px;
+    overflow: hidden;
+    justify-content: center;
+  }
+  .wa-bubble {
+    max-width: 85%;
+    background: linear-gradient(135deg, #00c896, #00a878);
+    border-radius: 12px 12px 12px 4px;
+    padding: 8px 11px;
+    font-size: 11px;
+    line-height: 1.4;
+    align-self: flex-start;
+    color: var(--white);
+    opacity: 0;
+    transform: translateY(8px);
+    animation: bubbleIn 0.5s ease forwards;
+  }
+  .wa-bubble.lead {
+    background: rgba(255,255,255,0.12);
+    align-self: flex-end;
+    border-radius: 12px 12px 4px 12px;
+  }
+  .wa-bubble:nth-child(1) { animation-delay: 0.4s; }
+  .wa-bubble:nth-child(2) { animation-delay: 1.4s; }
+  @keyframes bubbleIn { to { opacity: 1; transform: translateY(0); } }
+  .wa-speed-ring {
+    position: absolute;
+    width: 220px; height: 220px;
+    border: 2px solid var(--teal);
+    border-radius: 50%;
+    opacity: 0;
+    animation: speedPulse 2s ease-out infinite;
+  }
+  @keyframes speedPulse {
+    0%   { transform: scale(0.7); opacity: 0.6; }
+    100% { transform: scale(1.4); opacity: 0; }
+  }
+  .wa-speed-badge {
+    position: absolute;
+    top: 16px; right: -10px;
+    background: var(--teal); color: var(--navy);
+    font-family: 'Poppins', sans-serif;
+    font-size: 11px; font-weight: 800;
+    padding: 5px 10px; border-radius: 100px;
+    box-shadow: 0 0 20px rgba(111,255,233,0.5);
+    z-index: 4;
+    animation: badgeFloat 2s ease-in-out infinite;
+  }
+  @keyframes badgeFloat {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-5px); }
+  }
+
+  /* VISUAL 3: BRAIN */
+  .v-brain { width: 100%; height: 100%; position: relative; display: flex; align-items: center; justify-content: center; }
+  .brain-orb {
+    width: 100px; height: 100px;
+    background: radial-gradient(circle, var(--teal), var(--blue));
+    border-radius: 50%;
+    position: relative; z-index: 3;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px;
+    box-shadow: 0 0 60px rgba(111,255,233,0.5);
+    animation: brainPulse 1.5s ease-in-out infinite;
+  }
+  @keyframes brainPulse {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.05); }
+  }
+  .brain-tag {
+    position: absolute;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(111,255,233,0.2);
+    border-radius: 100px;
+    padding: 5px 12px;
+    font-size: 11px; font-weight: 500;
+    backdrop-filter: blur(8px);
+    color: var(--white);
+    z-index: 2;
+    opacity: 0;
+    white-space: nowrap;
+    animation: tagFly 0.6s ease forwards;
+  }
+  .brain-tag::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--teal);
+    display: inline-block;
+    margin-right: 6px;
+    box-shadow: 0 0 6px var(--teal);
+    vertical-align: middle;
+  }
+  .brain-tag:nth-child(2) { top: 12%; left: 6%; animation-delay: 0.4s; }
+  .brain-tag:nth-child(3) { top: 8%; right: 4%; animation-delay: 0.7s; }
+  .brain-tag:nth-child(4) { bottom: 18%; left: 4%; animation-delay: 1.0s; }
+  .brain-tag:nth-child(5) { bottom: 14%; right: 6%; animation-delay: 1.3s; }
+  @keyframes tagFly {
+    from { opacity: 0; transform: scale(0.7); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  /* VISUAL 4: CALENDAR */
+  .v-calendar { width: 100%; height: 100%; position: relative; display: flex; align-items: center; justify-content: center; }
+  .cal-card {
+    width: 220px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 16px;
+    padding: 14px;
+    position: relative; z-index: 2;
+    backdrop-filter: blur(12px);
+  }
+  .cal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    margin-bottom: 10px;
+  }
+  .cal-month-label { font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: 700; color: var(--white); }
+  .cal-week-tag {
+    font-size: 9px; color: var(--teal);
+    background: rgba(111,255,233,0.08);
+    padding: 2px 8px; border-radius: 100px;
+    border: 1px solid rgba(111,255,233,0.2);
+  }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .cal-dayname {
+    font-size: 9px; font-weight: 600;
+    color: var(--teal);
+    text-align: center;
+    padding: 2px 0;
+  }
+  .cal-day {
+    aspect-ratio: 1;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 500;
+    color: rgba(255,255,255,0.5);
+    background: rgba(255,255,255,0.03);
+  }
+  .cal-day.has-event { color: var(--white); background: rgba(255,255,255,0.06); }
+  .cal-day.selected {
+    background: var(--teal);
+    color: var(--navy);
+    font-weight: 800;
+    box-shadow: 0 0 16px rgba(111,255,233,0.5);
+    animation: dayPop 0.5s ease 0.4s both;
+  }
+  @keyframes dayPop {
+    0%   { transform: scale(0.5); opacity: 0; }
+    50%  { transform: scale(1.2); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .cal-confirm {
+    margin-top: 12px;
+    padding: 10px;
+    background: rgba(0,200,150,0.08);
+    border: 1px solid rgba(0,200,150,0.25);
+    border-radius: 10px;
+    display: flex; align-items: center; gap: 8px;
+    opacity: 0;
+    animation: confirmIn 0.5s ease 1.0s forwards;
+  }
+  @keyframes confirmIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .cal-confirm-icon {
+    width: 22px; height: 22px;
+    background: #00c896; color: var(--navy);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800;
+    flex-shrink: 0;
+  }
+  .cal-confirm-text { font-size: 10.5px; line-height: 1.4; color: var(--white); }
+  .cal-confirm-text strong { color: var(--teal); display: block; font-size: 9.5px; margin-bottom: 1px; letter-spacing: 0.04em; text-transform: uppercase; }
+  .cal-floating-icons { position: absolute; inset: 0; pointer-events: none; }
+  .cal-float-icon {
+    position: absolute;
+    width: 32px; height: 32px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    backdrop-filter: blur(8px);
+    animation: iconFloat 4s ease-in-out infinite;
+  }
+  .cal-float-icon:nth-child(1) { top: 8%; left: 0%; animation-delay: 0s; }
+  .cal-float-icon:nth-child(2) { top: 18%; right: 0%; animation-delay: 1s; }
+  .cal-float-icon:nth-child(3) { bottom: 12%; left: 2%; animation-delay: 2s; }
+  @keyframes iconFloat {
+    0%, 100% { transform: translateY(0) rotate(-3deg); }
+    50%      { transform: translateY(-10px) rotate(3deg); }
+  }
+
+  /* AUTO-ADVANCE BAR */
+  .auto-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 0 0 24px 24px;
+    overflow: hidden;
+  }
+  .auto-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--teal), var(--blue));
+    width: 0%;
+    transition: width 0.05s linear;
+    box-shadow: 0 0 10px rgba(111,255,233,0.5);
+  }
+
+  /* CONTROLS */
+  .flow-controls {
+    display: flex; justify-content: center; align-items: center;
+    gap: 12px; margin-top: 24px;
+    position: relative; z-index: 5;
+  }
+  .ctrl-btn {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--white);
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 16px;
+    font-family: 'Outfit', sans-serif;
+    -webkit-tap-highlight-color: rgba(111,255,233,0.2);
+    touch-action: manipulation;
+    user-select: none;
+  }
+  .ctrl-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(111,255,233,0.3); }
+  .ctrl-btn:active { transform: scale(0.95); background: rgba(111,255,233,0.15); }
+  .ctrl-play {
+    background: var(--teal); color: var(--navy); border-color: var(--teal);
+    width: 48px; height: 48px;
+  }
+  .ctrl-play:hover { box-shadow: 0 0 24px rgba(111,255,233,0.4); }
+
+  /* MOBILE */
+  @media (max-width: 720px) {
+    .progress-rail { max-width: 100%; margin-bottom: 28px; }
+    .step-circle { width: 34px; height: 34px; font-size: 12px; }
+    .step-pill-label { font-size: 10px; }
+    .progress-rail::before, .progress-rail::after { top: 16px; }
+
+    .flow-stage { padding: 24px 18px; min-height: 540px; }
+    .stage-content { grid-template-columns: 1fr; gap: 24px; min-height: 500px; }
+    .stage-visual { order: -1; height: 240px; }
+    .stage-text { text-align: center; align-items: center; }
+    .stage-tag { margin: 0 auto; }
+    .stage-bullets { text-align: left; align-self: stretch; max-width: 360px; margin: 0 auto; }
+
+    .wa-phone { width: 150px; height: 220px; }
+    .wa-screen { padding: 12px 8px; gap: 8px; }
+    .wa-bubble { font-size: 10px; padding: 7px 10px; }
+    .wa-speed-ring { width: 170px; height: 170px; }
+    .wa-speed-badge { font-size: 10px; padding: 4px 9px; right: 0; top: 8px; }
+
+    .cal-card { width: 200px; padding: 12px; }
+    .cal-month-label { font-size: 11px; }
+    .cal-day { font-size: 10px; }
+    .cal-dayname { font-size: 8px; }
+
+    .source-node { font-size: 10px; padding: 5px 9px; }
+    .source-node[data-pos="tl"] { top: 15%; left: 22%; }
+    .source-node[data-pos="tr"] { top: 15%; left: 78%; }
+    .source-node[data-pos="bl"] { top: 85%; left: 22%; }
+    .source-node[data-pos="br"] { top: 85%; left: 78%; }
+
+    .brain-orb { width: 80px; height: 80px; font-size: 30px; }
+    .brain-tag { font-size: 10px; padding: 4px 10px; }
+    .brain-tag:nth-child(2) { top: 8%; left: 2%; }
+    .brain-tag:nth-child(3) { top: 4%; right: 2%; }
+    .brain-tag:nth-child(4) { bottom: 12%; left: 2%; }
+    .brain-tag:nth-child(5) { bottom: 8%; right: 2%; }
+
+    .cal-float-icon { width: 28px; height: 28px; font-size: 14px; }
+  }
+  @media (max-width: 380px) {
+    .step-pill-label { font-size: 9px; }
+    .step-circle { width: 30px; height: 30px; font-size: 11px; }
+    .progress-rail::before, .progress-rail::after { top: 14px; }
   }
 </style>
 </head>
@@ -645,35 +1164,197 @@
 
 <!-- HOW IT WORKS -->
 <section id="como-funciona">
-  <div class="reveal">
+  <div class="reveal" style="text-align:center; margin-bottom: 60px;">
     <p class="section-tag">Así funciona</p>
     <h2>De lead a reunión agendada<br>en menos de 5 minutos</h2>
-    <p class="section-sub">Sin código. Sin configuraciones complicadas. Blink se conecta a tus fuentes y empieza a trabajar de inmediato.</p>
+    <p class="section-sub" style="margin: 0 auto;">Sin código. Sin configuraciones complicadas. Blink se conecta a tus fuentes y empieza a trabajar de inmediato.</p>
   </div>
-  <div class="steps reveal">
-    <div class="step">
-      <div class="step-num">01</div>
-      <div class="step-icon">🔗</div>
-      <h3>Detecta el lead</h3>
-      <p>Cuando alguien llena tu formulario, hace clic en tu anuncio o escribe en WhatsApp, Blink lo detecta en tiempo real.</p>
+
+  <!-- ANIMATED FLOW -->
+  <div class="flow-wrapper reveal">
+    <!-- Progress Rail -->
+    <div class="progress-rail" id="flowRail" data-step="1">
+      <button class="step-pill active" data-step="1" type="button">
+        <div class="step-circle"><span class="step-num-text">1</span></div>
+        <span class="step-pill-label">Detecta</span>
+      </button>
+      <button class="step-pill" data-step="2" type="button">
+        <div class="step-circle"><span class="step-num-text">2</span></div>
+        <span class="step-pill-label">Contacta</span>
+      </button>
+      <button class="step-pill" data-step="3" type="button">
+        <div class="step-circle"><span class="step-num-text">3</span></div>
+        <span class="step-pill-label">Califica</span>
+      </button>
+      <button class="step-pill" data-step="4" type="button">
+        <div class="step-circle"><span class="step-num-text">4</span></div>
+        <span class="step-pill-label">Agenda</span>
+      </button>
     </div>
-    <div class="step">
-      <div class="step-num">02</div>
-      <div class="step-icon">⚡</div>
-      <h3>Contacta en segundos</h3>
-      <p>En menos de 5 segundos, Blink escribe al lead por WhatsApp con un mensaje personalizado según la fuente.</p>
+
+    <!-- Stage -->
+    <div class="flow-stage" id="flowStage">
+      <div class="stage-content">
+
+        <!-- TEXT 1 -->
+        <div class="stage-text active" data-step="1">
+          <span class="stage-tag">Paso 01 · Recepción</span>
+          <h3>Detecta el lead<br>en tiempo real</h3>
+          <p>Blink se conecta a tus fuentes de leads y los detecta apenas llegan, sin que tengas que mover un dedo.</p>
+          <ul class="stage-bullets">
+            <li>Formularios web y landing pages</li>
+            <li>Anuncios de Meta y Google Ads</li>
+            <li>Portales: Urbania, Adondevivir, Nexo</li>
+            <li>WhatsApp directo a tu número</li>
+          </ul>
+        </div>
+
+        <!-- TEXT 2 -->
+        <div class="stage-text" data-step="2">
+          <span class="stage-tag">Paso 02 · Contacto</span>
+          <h3>Contacta en<br>menos de 5 segundos</h3>
+          <p>Mientras la competencia tarda horas, Blink ya está conversando. El primer mensaje gana el 78% de las ventas.</p>
+          <ul class="stage-bullets">
+            <li>Mensaje personalizado según la fuente</li>
+            <li>Disponible 24/7, incluso de madrugada</li>
+            <li>Tono natural, no parece bot</li>
+            <li>Con voz de marca de tu inmobiliaria</li>
+          </ul>
+        </div>
+
+        <!-- TEXT 3 -->
+        <div class="stage-text" data-step="3">
+          <span class="stage-tag">Paso 03 · Calificación</span>
+          <h3>Califica con<br>inteligencia artificial</h3>
+          <p>El agente conversa, entiende el contexto y clasifica al lead según sus necesidades reales.</p>
+          <ul class="stage-bullets">
+            <li>Identifica zona y presupuesto</li>
+            <li>Recomienda proyectos según el perfil</li>
+            <li>Resuelve dudas y objeciones comunes</li>
+            <li>Filtra leads no calificados</li>
+          </ul>
+        </div>
+
+        <!-- TEXT 4 -->
+        <div class="stage-text" data-step="4">
+          <span class="stage-tag">Paso 04 · Agenda</span>
+          <h3>Agenda la visita<br>presencial automáticamente</h3>
+          <p>Cuando el lead está listo, Blink agenda directamente con un asesor real y le envía toda la información del prospecto.</p>
+          <ul class="stage-bullets">
+            <li>Sincroniza con el calendario del asesor</li>
+            <li>Envía recordatorios al lead y al asesor</li>
+            <li>Pide confirmación antes de la visita</li>
+            <li>Registra todo en tu dashboard</li>
+          </ul>
+        </div>
+
+        <!-- VISUAL 1: SOURCES -->
+        <div class="stage-visual active" data-step="1">
+          <div class="v-sources">
+            <svg viewBox="0 0 400 320" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <linearGradient id="hubGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#6FFFE9"/>
+                  <stop offset="100%" stop-color="#035FFF"/>
+                </linearGradient>
+              </defs>
+              <path class="conn-line" d="M72,57.6 Q140,110 200,160" />
+              <path class="conn-line" d="M328,57.6 Q260,110 200,160" />
+              <path class="conn-line" d="M72,262.4 Q140,210 200,160" />
+              <path class="conn-line" d="M328,262.4 Q260,210 200,160" />
+              <circle class="hub-circle" cx="200" cy="160" r="36" />
+              <text x="200" y="170" text-anchor="middle" font-size="28" fill="#001859" font-family="Outfit">⚡</text>
+            </svg>
+            <div class="source-node" data-pos="tl"><span class="source-node-icon">🌐</span> Web</div>
+            <div class="source-node" data-pos="tr"><span class="source-node-icon">📱</span> Meta</div>
+            <div class="source-node" data-pos="bl"><span class="source-node-icon">🔍</span> Google</div>
+            <div class="source-node" data-pos="br"><span class="source-node-icon">🏢</span> Urbania</div>
+          </div>
+        </div>
+
+        <!-- VISUAL 2: WHATSAPP -->
+        <div class="stage-visual" data-step="2">
+          <div class="v-whatsapp">
+            <div class="wa-speed-ring"></div>
+            <div class="wa-speed-ring" style="animation-delay: 0.7s;"></div>
+            <div class="wa-speed-badge">⚡ &lt; 5 seg</div>
+            <div class="wa-phone">
+              <div class="wa-notch"></div>
+              <div class="wa-screen">
+                <div class="wa-bubble">¡Hola Andrea! 👋 Soy Valeria de la inmobiliaria. Vi tu interés en Griin</div>
+                <div class="wa-bubble lead">¡Hola! Sí, me interesa</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VISUAL 3: AI BRAIN -->
+        <div class="stage-visual" data-step="3">
+          <div class="v-brain">
+            <div class="brain-orb">🧠</div>
+            <div class="brain-tag">Zona: Miraflores</div>
+            <div class="brain-tag">Presupuesto: $180K</div>
+            <div class="brain-tag">2 dormitorios</div>
+            <div class="brain-tag">Estacionamiento</div>
+          </div>
+        </div>
+
+        <!-- VISUAL 4: CALENDAR -->
+        <div class="stage-visual" data-step="4">
+          <div class="v-calendar">
+            <div class="cal-floating-icons">
+              <div class="cal-float-icon">📧</div>
+              <div class="cal-float-icon">🔔</div>
+              <div class="cal-float-icon">📊</div>
+            </div>
+            <div class="cal-card">
+              <div class="cal-header">
+                <span class="cal-month-label">Marzo 2026</span>
+                <span class="cal-week-tag">Sem 11</span>
+              </div>
+              <div class="cal-grid">
+                <div class="cal-dayname">L</div>
+                <div class="cal-dayname">M</div>
+                <div class="cal-dayname">M</div>
+                <div class="cal-dayname">J</div>
+                <div class="cal-dayname">V</div>
+                <div class="cal-dayname">S</div>
+                <div class="cal-dayname">D</div>
+                <div class="cal-day">9</div>
+                <div class="cal-day has-event">10</div>
+                <div class="cal-day">11</div>
+                <div class="cal-day has-event">12</div>
+                <div class="cal-day">13</div>
+                <div class="cal-day selected">14</div>
+                <div class="cal-day">15</div>
+                <div class="cal-day">16</div>
+                <div class="cal-day">17</div>
+                <div class="cal-day has-event">18</div>
+                <div class="cal-day">19</div>
+                <div class="cal-day has-event">20</div>
+                <div class="cal-day">21</div>
+                <div class="cal-day">22</div>
+              </div>
+              <div class="cal-confirm">
+                <div class="cal-confirm-icon">✓</div>
+                <div class="cal-confirm-text">
+                  <strong>Visita confirmada</strong>
+                  Sáb 14 · 10:30 AM · Carlos M.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="auto-bar"><div class="auto-bar-fill" id="flowAutoBar"></div></div>
     </div>
-    <div class="step">
-      <div class="step-num">03</div>
-      <div class="step-icon">🧠</div>
-      <h3>Califica y responde</h3>
-      <p>El agente IA conversa, responde preguntas, maneja objeciones y determina si el lead está listo para avanzar.</p>
-    </div>
-    <div class="step">
-      <div class="step-num">04</div>
-      <div class="step-icon">📅</div>
-      <h3>Agenda la reunión</h3>
-      <p>Si el lead califica, Blink agenda una cita con tu asesor directo en su calendario y envía confirmación automática.</p>
+
+    <!-- Controls -->
+    <div class="flow-controls">
+      <button class="ctrl-btn" id="flowPrev" type="button" aria-label="Anterior">‹</button>
+      <button class="ctrl-btn ctrl-play" id="flowPlay" type="button" aria-label="Pausar">⏸</button>
+      <button class="ctrl-btn" id="flowNext" type="button" aria-label="Siguiente">›</button>
     </div>
   </div>
 </section>
@@ -1140,6 +1821,7 @@ function makeTyping() {
 }
 
 function runScript(s) {
+  const SPEED_MULT = 1.7; // slower so users can read each message
   s.forEach(step => {
     setTimeout(() => {
       if (step.t === 'typing') {
@@ -1151,14 +1833,14 @@ function runScript(s) {
       else if (step.t === 'photo')       addMsg(makePhoto(step.label, step.color1, step.color2, step.icon));
       else if (step.t === 'audio')       addMsg(makeAudio());
       else if (step.t === 'confirmed')   addMsg(makeConfirmed());
-    }, step.d);
+    }, step.d * SPEED_MULT);
   });
 }
 
 runScript(script);
 
 // Loop: restart after full sequence + 4s pause
-const loopDelay = 21800 + 4000;
+const loopDelay = 21800 * 1.7 + 4000;
 setInterval(() => {
   chatBody.innerHTML = '';
   typingEl = null;
@@ -1466,6 +2148,132 @@ document.addEventListener('keydown', (e) => {
     closeDemoModal();
   }
 });
+
+// ═══════════════════════════════ ANIMATED FLOW ═══════════════════════════════
+(function() {
+  const STEP_DURATION = 6500;
+  let currentStep = 1;
+  let isPlaying = true;
+  let progressStart = 0;
+  let progressRAF = null;
+  let advanceTimer = null;
+  let hasStarted = false;
+
+  function setStep(step) {
+    currentStep = step;
+    const rail = document.getElementById('flowRail');
+    if (!rail) return;
+    rail.dataset.step = step;
+
+    document.querySelectorAll('#flowRail .step-pill').forEach(p => {
+      const s = parseInt(p.dataset.step);
+      p.classList.remove('active','completed');
+      if (s < step) p.classList.add('completed');
+      else if (s === step) p.classList.add('active');
+    });
+
+    document.querySelectorAll('.stage-text').forEach(el => {
+      el.classList.toggle('active', parseInt(el.dataset.step) === step);
+    });
+    document.querySelectorAll('.stage-visual').forEach(el => {
+      el.classList.toggle('active', parseInt(el.dataset.step) === step);
+    });
+
+    resetBar();
+    if (isPlaying) startBar();
+  }
+
+  function resetBar() {
+    cancelAnimationFrame(progressRAF);
+    clearTimeout(advanceTimer);
+    const bar = document.getElementById('flowAutoBar');
+    if (bar) bar.style.width = '0%';
+  }
+
+  function startBar() {
+    progressStart = performance.now();
+    const bar = document.getElementById('flowAutoBar');
+    if (!bar) return;
+
+    function tick(now) {
+      const elapsed = now - progressStart;
+      const pct = Math.min((elapsed / STEP_DURATION) * 100, 100);
+      bar.style.width = pct + '%';
+      if (pct < 100 && isPlaying) progressRAF = requestAnimationFrame(tick);
+    }
+    progressRAF = requestAnimationFrame(tick);
+
+    advanceTimer = setTimeout(() => {
+      if (isPlaying) {
+        const next = currentStep === 4 ? 1 : currentStep + 1;
+        setStep(next);
+      }
+    }, STEP_DURATION);
+  }
+
+  function pauseBar() {
+    cancelAnimationFrame(progressRAF);
+    clearTimeout(advanceTimer);
+  }
+
+  function nextStep() { setStep(currentStep === 4 ? 1 : currentStep + 1); }
+  function prevStep() { setStep(currentStep === 1 ? 4 : currentStep - 1); }
+
+  function togglePlay() {
+    isPlaying = !isPlaying;
+    const btn = document.getElementById('flowPlay');
+    if (!btn) return;
+    if (isPlaying) {
+      btn.textContent = '⏸';
+      btn.setAttribute('aria-label', 'Pausar');
+      startBar();
+    } else {
+      btn.textContent = '▶';
+      btn.setAttribute('aria-label', 'Reproducir');
+      pauseBar();
+    }
+  }
+
+  // Bind controls
+  const prevBtn = document.getElementById('flowPrev');
+  const nextBtn = document.getElementById('flowNext');
+  const playBtn = document.getElementById('flowPlay');
+
+  if (prevBtn) prevBtn.addEventListener('click', (e) => { e.preventDefault(); prevStep(); });
+  if (nextBtn) nextBtn.addEventListener('click', (e) => { e.preventDefault(); nextStep(); });
+  if (playBtn) playBtn.addEventListener('click', (e) => { e.preventDefault(); togglePlay(); });
+
+  document.querySelectorAll('#flowRail .step-pill').forEach(pill => {
+    pill.addEventListener('click', (e) => {
+      e.preventDefault();
+      setStep(parseInt(pill.dataset.step));
+    });
+  });
+
+  // Pause on hover (desktop only)
+  const stage = document.getElementById('flowStage');
+  if (stage && window.matchMedia('(hover: hover)').matches) {
+    stage.addEventListener('mouseenter', () => { if (isPlaying) pauseBar(); });
+    stage.addEventListener('mouseleave', () => { if (isPlaying) startBar(); });
+  }
+
+  // Start animation only when section enters viewport (saves CPU)
+  const flowSection = document.getElementById('como-funciona');
+  if (flowSection && 'IntersectionObserver' in window) {
+    const flowObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && !hasStarted) {
+          hasStarted = true;
+          setStep(1);
+          flowObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.2 });
+    flowObserver.observe(flowSection);
+  } else {
+    setStep(1);
+  }
+})();
 </script>
 </body>
 </html>
