@@ -387,6 +387,9 @@
 
   .popup-form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
   .popup-input { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 13px 16px; font-size: 14px; color: var(--white); font-family: 'Outfit', sans-serif; outline: none; transition: border-color 0.2s; }
+  .popup-select { -webkit-appearance: none; appearance: none; cursor: pointer; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'><path d='M1 1.5L6 6.5L11 1.5' stroke='%236FFFE9' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>"); background-repeat: no-repeat; background-position: right 16px center; padding-right: 40px; }
+  .popup-select:invalid, .popup-select option[value=""] { color: #8896b8; }
+  .popup-select option { background: #0a1530; color: var(--white); padding: 10px; }
   .popup-input::placeholder { color: var(--text-muted); }
   .popup-input:focus { border-color: rgba(111,255,233,0.4); }
   .popup-input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -487,23 +490,23 @@
 <div class="orb orb-3"></div>
 <canvas id="bg-canvas"></canvas>
 
-<!-- EXIT POPUP -->
-<div class="popup-overlay" id="exitPopup">
+<!-- DEMO MODAL -->
+<div class="popup-overlay" id="demoModal">
   <div class="popup-box">
-    <button class="popup-close" onclick="closePopup()">✕</button>
-    <div class="popup-gift">📞</div>
-    <div class="popup-tag">Solo por hoy</div>
-    <h3>Agenda una llamada y<br>obtén hasta <em>50% off</em></h3>
-    <p>Conversa 20 minutos con nuestro equipo. Sin compromiso. Los que agendan hoy acceden a un descuento de hasta el 50% en su <strong style="color:var(--white)">primer mes</strong>.</p>
+    <button class="popup-close" onclick="closeDemoModal()">✕</button>
+    <div class="popup-gift">📅</div>
+    <div class="popup-tag">Demo personalizada · 30 min</div>
+    <h3>Agenda tu demo<br>de <em>Blink</em></h3>
+    <p>Déjanos tus datos y elige el horario que mejor te convenga. Te mostraremos cómo Blink puede automatizar la atención de tus leads en menos de 30 minutos.</p>
 
-    <div class="popup-form" id="popupForm">
+    <div class="popup-form" id="demoForm">
       <div class="popup-input-row">
-        <input type="text" class="popup-input" id="pName" placeholder="Nombre completo *" oninput="clearError(this)">
-        <input type="email" class="popup-input" id="pEmail" placeholder="Correo electrónico *" oninput="clearError(this)">
+        <input type="text" class="popup-input" id="dName" placeholder="Nombre completo *" oninput="clearDemoError(this)">
+        <input type="text" class="popup-input" id="dCompany" placeholder="Empresa *" oninput="clearDemoError(this)">
       </div>
-      <!-- Phone with country code -->
-      <div class="phone-field" id="phoneField">
-        <select class="country-select" id="countryCode">
+      <input type="email" class="popup-input" id="dEmail" placeholder="Correo electrónico *" oninput="clearDemoError(this)">
+      <div class="phone-field" id="dPhoneField">
+        <select class="country-select" id="dCountryCode">
           <option value="+51">🇵🇪 +51</option>
           <option value="+1">🇺🇸 +1</option>
           <option value="+52">🇲🇽 +52</option>
@@ -519,22 +522,28 @@
           <option value="+55">🇧🇷 +55</option>
           <option value="+44">🇬🇧 +44</option>
         </select>
-        <input type="tel" class="phone-number-input" id="pPhoneNumber" placeholder="Número de WhatsApp *" oninput="clearPhoneError()">
+        <input type="tel" class="phone-number-input" id="dPhoneNumber" placeholder="Número de WhatsApp *" oninput="clearDemoPhoneError()">
       </div>
-      <input type="hidden" id="pPhone">
-      <div id="popupError" style="color:#ff6b6b;font-size:12.5px;text-align:left;display:none;padding:4px 2px;">⚠ Por favor completa todos los campos.</div>
+      <select class="popup-input popup-select" id="dPlan" onchange="clearDemoError(this)">
+        <option value="">¿Qué plan te interesa? *</option>
+        <option value="Edify">Edify · desde $299/mes</option>
+        <option value="Edify Pro">Edify Pro · desde $499/mes</option>
+        <option value="Edify Scale">Edify Scale · a medida</option>
+        <option value="Personalizado">Quiero un plan personalizado</option>
+        <option value="No estoy seguro">Aún no estoy seguro</option>
+      </select>
+      <div id="demoError" style="color:#ff6b6b;font-size:12.5px;text-align:left;display:none;padding:4px 2px;">⚠ Por favor completa todos los campos correctamente.</div>
     </div>
 
-    <button class="popup-btn" onclick="submitPopup()">Agendar mi llamada gratis →</button>
-    <br>
-    <button class="popup-skip" onclick="closePopup()">Ahora no</button>
+    <button class="popup-btn" onclick="submitDemo()">Continuar a calendario →</button>
+    <p style="font-size:11.5px;color:var(--text-muted);margin-top:14px;text-align:center;">🔒 Tus datos están protegidos. No compartimos información con terceros.</p>
   </div>
 </div>
 
 <!-- NAV -->
 <nav>
   <span class="logo">blink</span>
-  <a href="#pricing" class="nav-cta">Ver planes</a>
+  <a href="#" onclick="event.preventDefault();openDemoModal();" class="nav-cta">Agendar demo</a>
 </nav>
 
 <!-- HERO -->
@@ -552,7 +561,7 @@
     </p>
 
     <div class="hero-actions">
-      <a href="#pricing" class="btn-primary">Ver planes y precios</a>
+      <a href="#" onclick="event.preventDefault();openDemoModal();" class="btn-primary">Agendar demo gratuita</a>
       <a href="#como-funciona" class="btn-secondary">Ver cómo funciona</a>
     </div>
 
@@ -754,7 +763,7 @@
           <li>Agendamiento automático</li>
           <li>Dashboard de métricas</li>
         </ul>
-        <a href="checkout.html?plan=edify-monthly" id="e1-btn" class="btn-price btn-price-outline">Empezar con Edify</a>
+        <a href="#" onclick="event.preventDefault();openDemoModal();" id="e1-btn" class="btn-price btn-price-outline">Agendar demo</a>
         <p class="price-note" id="e1-note">Periodo de 30 días calendario</p>
       </div>
 
@@ -781,7 +790,7 @@
           <li>Seguimiento y reactivación automática</li>
           <li>Dashboard avanzado + exportación</li>
         </ul>
-        <a href="checkout.html?plan=pro-monthly" id="e2-btn" class="btn-price btn-price-teal">Empezar con Edify Pro</a>
+        <a href="#" onclick="event.preventDefault();openDemoModal();" id="e2-btn" class="btn-price btn-price-teal">Agendar demo</a>
         <p class="price-note" id="e2-note">Periodo de 30 días calendario</p>
       </div>
 
@@ -806,7 +815,7 @@
           <li>Onboarding presencial o virtual</li>
           <li>Reportes personalizados</li>
         </ul>
-        <a href="https://wa.me/51912345678?text=Hola,%20quiero%20info%20del%20plan%20Edify%20Scale%20de%20Blink" target="_blank" class="btn-price btn-price-outline">Hablar con ventas</a>
+        <a href="#" onclick="event.preventDefault();openDemoModal();" class="btn-price btn-price-outline">Agendar demo</a>
         <p class="price-note">Cotización personalizada en 24 hrs</p>
       </div>
 
@@ -956,7 +965,7 @@
   <p class="section-tag">Empieza hoy</p>
   <h2>Tu competencia ya responde<br>en segundos. <em>¿Y tú?</em></h2>
   <p>Activa Blink y convierte más leads desde el primer día. Implementación incluida en todos los planes.</p>
-  <a href="#pricing" class="btn-primary" style="font-size:17px; padding:17px 44px; display:inline-block;">Activar mi agente Blink →</a>
+  <a href="#" onclick="event.preventDefault();openDemoModal();" class="btn-primary" style="font-size:17px; padding:17px 44px; display:inline-block;">Agendar demo gratuita →</a>
 </div>
 
 <!-- FOOTER -->
@@ -1266,10 +1275,6 @@ function toggleBilling(sw) {
     document.getElementById('e2-amount').innerHTML = '<sup>$</sup>499';
     document.getElementById('e2-period').textContent = 'por mes · plan trimestral';
     document.getElementById('e2-note').textContent = '$1,497 total · ahorras $303 vs mensual';
-    document.getElementById('e1-btn').href = 'checkout.html?plan=edify-quarterly';
-    document.getElementById('e2-btn').href = 'checkout.html?plan=pro-quarterly';
-    document.getElementById('e1-btn').href = 'checkout.html?plan=edify-quarterly';
-    document.getElementById('e2-btn').href = 'checkout.html?plan=pro-quarterly';
   } else {
     // Mensual
     document.getElementById('e1-original').textContent = '';
@@ -1280,8 +1285,6 @@ function toggleBilling(sw) {
     document.getElementById('e2-amount').innerHTML = '<sup>$</sup>600';
     document.getElementById('e2-period').textContent = 'por mes · facturación mensual';
     document.getElementById('e2-note').textContent = 'Periodo de 30 días calendario';
-    document.getElementById('e1-btn').href = 'checkout.html?plan=edify-monthly';
-    document.getElementById('e2-btn').href = 'checkout.html?plan=pro-monthly';
   }
 }
 
@@ -1326,94 +1329,143 @@ const observer = new IntersectionObserver((entries) => {
 }, { threshold: 0.1 });
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-// ── EXIT INTENT POPUP ──
-let popupShown = false;
-let popupTimer = null;
+// ── DEMO MODAL ──
+const CALENDLY_URL = 'https://calendly.com/contacto-blink-peru/30min';
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbyzu754ycA6ahe920Duo2iU8W-Aqv_T7hwunU-l-1mjGhfmtBHcUgKb-LtsqfOQDadpOQ/exec';
 
-function showPopup() {
-  if (popupShown) return;
-  popupShown = true;
-  document.getElementById('exitPopup').classList.add('active');
+function openDemoModal() {
+  document.getElementById('demoModal').classList.add('active');
+  document.body.style.overflow = 'hidden';
 }
 
-function closePopup() {
-  document.getElementById('exitPopup').classList.remove('active');
+function closeDemoModal() {
+  document.getElementById('demoModal').classList.remove('active');
+  document.body.style.overflow = '';
 }
 
-function clearError(el) {
+function clearDemoError(el) {
   el.style.borderColor = '';
-  document.getElementById('popupError').style.display = 'none';
+  document.getElementById('demoError').style.display = 'none';
 }
 
-function clearPhoneError() {
-  document.getElementById('phoneField').classList.remove('error');
-  document.getElementById('popupError').style.display = 'none';
+function clearDemoPhoneError() {
+  document.getElementById('dPhoneField').classList.remove('error');
+  document.getElementById('demoError').style.display = 'none';
 }
 
-function submitPopup() {
-  const name       = document.getElementById('pName');
-  const phoneNum   = document.getElementById('pPhoneNumber');
-  const email      = document.getElementById('pEmail');
-  const countryCode = document.getElementById('countryCode');
-  const errEl      = document.getElementById('popupError');
-  const phoneField = document.getElementById('phoneField');
+// Validate email — must have proper format AND a valid TLD
+function validateDemoEmail(email) {
+  const re = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
+  if (!re.test(email)) return false;
+  const domain = email.split('@')[1];
+  if (!domain || !domain.includes('.')) return false;
+  const fakeDomains = ['test.com','example.com','email.com','mail.com','fake.com','asd.com','qwe.com','abc.com','xxx.com','aaa.com','123.com'];
+  if (fakeDomains.includes(domain.toLowerCase())) return false;
+  return true;
+}
+
+// Validate phone — Peru must be 9 digits, others lenient
+function validateDemoPhone(phone, countryCode) {
+  const digits = phone.replace(/\D/g, '');
+  if (countryCode === '+51') return digits.length === 9;
+  return digits.length >= 7 && digits.length <= 13;
+}
+
+function submitDemo() {
+  const name        = document.getElementById('dName');
+  const company     = document.getElementById('dCompany');
+  const email       = document.getElementById('dEmail');
+  const phoneNum    = document.getElementById('dPhoneNumber');
+  const countryCode = document.getElementById('dCountryCode');
+  const planSel     = document.getElementById('dPlan');
+  const errEl       = document.getElementById('demoError');
+  const phoneField  = document.getElementById('dPhoneField');
 
   let valid = true;
-  [name, email].forEach(f => { f.style.borderColor = ''; });
+  let errorMsg = '⚠ Por favor completa todos los campos correctamente.';
+
+  [name, company, email, planSel].forEach(f => { f.style.borderColor = ''; });
   phoneField.classList.remove('error');
 
-  if (!name.value.trim()) { name.style.borderColor = '#ff6b6b'; valid = false; }
-  if (!phoneNum.value.trim() || phoneNum.value.trim().length < 6) { phoneField.classList.add('error'); valid = false; }
-  const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRe.test(email.value.trim())) { email.style.borderColor = '#ff6b6b'; valid = false; }
+  if (!name.value.trim() || name.value.trim().split(/\s+/).length < 2) {
+    name.style.borderColor = '#ff6b6b';
+    errorMsg = '⚠ Ingresa tu nombre y apellido.';
+    valid = false;
+  }
+  if (!company.value.trim()) {
+    company.style.borderColor = '#ff6b6b';
+    valid = false;
+  }
+  if (!validateDemoEmail(email.value.trim())) {
+    email.style.borderColor = '#ff6b6b';
+    if (valid) errorMsg = '⚠ Ingresa un correo válido (ej. nombre@gmail.com).';
+    valid = false;
+  }
+  if (!validateDemoPhone(phoneNum.value, countryCode.value)) {
+    phoneField.classList.add('error');
+    if (valid) errorMsg = countryCode.value === '+51'
+      ? '⚠ El número de Perú debe tener exactamente 9 dígitos.'
+      : '⚠ Ingresa un número de WhatsApp válido.';
+    valid = false;
+  }
+  if (!planSel.value) {
+    planSel.style.borderColor = '#ff6b6b';
+    if (valid) errorMsg = '⚠ Selecciona un plan de interés.';
+    valid = false;
+  }
 
-  if (!valid) { errEl.style.display = 'block'; return; }
+  if (!valid) {
+    errEl.textContent = errorMsg;
+    errEl.style.display = 'block';
+    return;
+  }
 
   const fullPhone = countryCode.value + ' ' + phoneNum.value.trim();
-
-  const data = {
-    nombre:   name.value.trim(),
-    empresa:  '',
-    whatsapp: fullPhone,
-    email:    email.value.trim(),
-    fecha:    new Date().toLocaleString('es-PE', { timeZone: 'America/Lima' })
-  };
-
-  const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbyzu754ycA6ahe920Duo2iU8W-Aqv_T7hwunU-l-1mjGhfmtBHcUgKb-LtsqfOQDadpOQ/exec';
-  const btn = document.querySelector('.popup-btn');
+  const btn = document.querySelector('#demoModal .popup-btn');
   btn.textContent = 'Enviando...';
   btn.disabled = true;
 
+  // Save to Google Sheets
   const params = new URLSearchParams({
-    fecha:    data.fecha,
-    nombre:   data.nombre,
-    whatsapp: data.whatsapp,
-    email:    data.email
+    fecha:    new Date().toLocaleString('es-PE', { timeZone: 'America/Lima' }),
+    nombre:   name.value.trim(),
+    empresa:  company.value.trim(),
+    whatsapp: fullPhone,
+    email:    email.value.trim(),
+    plan:     planSel.value
   });
 
   fetch(SHEETS_URL + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
-  .finally(() => {
-    btn.textContent = '✓ ¡Listo! Te contactamos pronto';
-    btn.style.background = 'linear-gradient(135deg,#00c896,#00a8d8)';
-    setTimeout(closePopup, 2200);
-  });
+    .finally(() => {
+      btn.textContent = '✓ Redirigiendo a calendario...';
+      btn.style.background = 'linear-gradient(135deg,#00c896,#00a8d8)';
+
+      // Build Calendly URL with prefilled data
+      const calendlyParams = new URLSearchParams({
+        name:    name.value.trim(),
+        email:   email.value.trim(),
+        a1:      company.value.trim(),
+        a2:      fullPhone,
+        a3:      planSel.value
+      });
+
+      setTimeout(() => {
+        window.location.href = CALENDLY_URL + '?' + calendlyParams.toString();
+      }, 1000);
+    });
 }
 
-// Desktop: mouse leaves viewport
-document.addEventListener('mouseleave', (e) => {
-  if (e.clientY <= 0 && !popupShown) showPopup();
+// Close modal when clicking overlay (outside the box)
+document.getElementById('demoModal').addEventListener('click', (e) => {
+  if (e.target.id === 'demoModal') closeDemoModal();
 });
 
-// Mobile: scroll back up near top after scrolling down
-let maxScroll = 0;
-window.addEventListener('scroll', () => {
-  const current = window.scrollY;
-  if (current > maxScroll) maxScroll = current;
-  if (maxScroll > 600 && current < 100 && !popupShown) showPopup();
+// Close on Escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && document.getElementById('demoModal').classList.contains('active')) {
+    closeDemoModal();
+  }
 });
-
-// Fallback: show after 45 seconds
-popupTimer = setTimeout(showPopup, 45000);
 </script>
 </body>
 </html>
